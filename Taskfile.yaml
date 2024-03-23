@@ -1,0 +1,25 @@
+# https://taskfile.dev
+
+version: '3'
+
+tasks:
+  run:watch:
+    desc: 🚀 watch rustler
+    cmds:
+      - cargo watch -c -x "run -- --version"
+
+  build:watch:
+    desc: 🚀 watch rustler «build»
+    cmds:
+      - cargo watch -c -x "build"
+
+  build:
+    desc: ⚡ build rustler «release»
+    cmds:
+      - cargo build --release
+      - python check_size.py
+
+  fmt:
+    desc: 🚀 format rustler
+    cmds:
+      - cargo +nightly fmt --all
