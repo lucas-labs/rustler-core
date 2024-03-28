@@ -30,6 +30,11 @@ tasks:
       - python check_size.py
 
   fmt:
-    desc: 🚀 format rustler
+    desc: 🎨 format rustler
     cmds:
       - cargo +nightly fmt --all
+
+  lint:
+    desc: 🧶 lint rustler
+    cmds:
+      - cargo clippy --fix --workspace --allow-dirty

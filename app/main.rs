@@ -2,7 +2,7 @@ use {
     dotenvy::dotenv,
     entities::sea_orm::{ConnectionTrait, Database, DbBackend, Statement},
     eyre::Result,
-    std::sync::{Arc, Mutex},
+    std::sync::Arc,
 };
 
 // TODO: here we will trigger the start of both the grpc server and the websocket gateway

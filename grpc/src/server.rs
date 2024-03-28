@@ -1,8 +1,7 @@
 use {
-    core::time,
     entities::{market, sea_orm::DatabaseConnection},
     eyre::Result,
-    std::{env, sync::Arc, thread, time::Instant},
+    std::{sync::Arc, time::Instant},
     tonic::{transport::Server, Request, Response, Status},
 };
 
@@ -57,10 +56,10 @@ pub struct GrpcServer {
 impl MarketApi for GrpcServer {
     async fn get_all(&self, _: Request<Empty>) -> Result<Response<Markets>, Status> {
         let start = Instant::now();
-        if let Some(mkts) = self.svc.get_all().await.ok() {
+        if let Ok(mkts) = self.svc.get_all().await {
             println!("get_all took {:?}", start.elapsed());
             Ok(Response::new(Markets {
-                markets: mkts.into_iter().map(|m| Market::from_model(m)).collect(),
+                markets: mkts.into_iter().map(Market::from_model).collect(),
             }))
         } else {
             println!("get_all took {:?}", start.elapsed());
@@ -72,7 +71,7 @@ impl MarketApi for GrpcServer {
         let start = Instant::now();
         let mkt = market.into_inner().into_model();
 
-        if let Some(m) = self.svc.create(mkt).await.ok() {
+        if let Ok(m) = self.svc.create(mkt).await {
             println!("create took {:?}", start.elapsed());
             Ok(Response::new(Market::from_model(m)))
         } else {

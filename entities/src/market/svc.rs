@@ -2,10 +2,7 @@ use {
     super::{Entity as MarketEntity, Model as MarketModel},
     eyre::Result,
     sea_orm::{DatabaseConnection, EntityTrait, IntoActiveModel},
-    std::{
-        sync::{Arc, Mutex},
-        time::Instant,
-    },
+    std::{sync::Arc, time::Instant},
 };
 
 pub struct Service {
