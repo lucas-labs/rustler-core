@@ -72,7 +72,7 @@ impl MarketApi for GrpcServer {
         let start = Instant::now();
         let mkt = market.into_inner().into_model();
 
-        if let Some(m) = self.svc.create_from_model(mkt).await.ok() {
+        if let Some(m) = self.svc.create(mkt).await.ok() {
             println!("create took {:?}", start.elapsed());
             Ok(Response::new(Market::from_model(m)))
         } else {
