@@ -1095,6 +1095,7 @@ version = "0.1.0"
 dependencies = [
  "entities",
  "eyre",
+ "log",
  "prost",
  "tonic",
  "tonic-build",
@@ -2249,6 +2250,7 @@ dependencies = [
  "entities",
  "eyre",
  "grpc",
+ "log",
  "tokio",
 ]
 

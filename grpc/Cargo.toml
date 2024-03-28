@@ -9,8 +9,14 @@ name = "grpc"
 path = "src/lib.rs"
 
 [dependencies]
+# common
+log = { workspace = true }
+eyre = { workspace = true, default-features = false }
+
+# internal
 entities = { path = "../entities" }
-eyre = { version = "0.6.12", default-features = false }
+
+# external
 prost = "0.12.3"
 tonic = "0.11.0"
 

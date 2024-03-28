@@ -27,6 +27,9 @@
 ## Commands
 
 ```bash
-# run migrations
-task db:migrate
+# add a dependency to a project
+cargo add {dependency} -p {project}
+
+# example
+cargo add tokio-tungstenite -p gateway
 ```

@@ -9,5 +9,12 @@ name = "entities"
 path = "src/lib.rs"
 
 [dependencies]
-sea-orm = { version = "0.12.15", features = ["runtime-tokio-native-tls", "sqlx-sqlite", "macros"] }
-eyre = { version = "0.6.12", default-features = false }
+# common
+eyre = { workspace = true, default-features = false }
+
+# external
+sea-orm = { version = "0.12.15", features = [
+    "runtime-tokio-native-tls",
+    "sqlx-sqlite",
+    "macros",
+] }

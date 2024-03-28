@@ -10,5 +10,5 @@ path = "src/lib.rs"
 
 [dependencies]
 entities = { path = "../entities" }
-eyre = { version = "0.6.12", default-features = false }
+eyre = { workspace = true, default-features = false }
 

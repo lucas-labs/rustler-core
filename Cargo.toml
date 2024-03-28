@@ -24,12 +24,19 @@ path = "app/main.rs"
 [workspace]
 members = [".", "migration", "entities", "grpc"]
 
+[workspace.dependencies]
+log = { version = "0.4.21" }
+eyre = { version = "0.6.12" }
+
 [dependencies]
 # internal
 entities = { path = "entities" }
 grpc = { path = "grpc" }
 
+# workspace
+log = { workspace = true }
+eyre = { workspace = true, default-features = false, features = ["auto-install"] }
+
 # external
-eyre = { version = "0.6.12", default-features = false, features = ["auto-install"] }
 tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
 dotenvy = "0.15.7"
