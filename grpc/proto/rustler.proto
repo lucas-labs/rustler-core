@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package rustler;
+
+service RustlerApi {
+    rpc GetAll (Empty) returns (Rustlers) {}
+    rpc ManageRustler (ManageRustlerDTO) returns (Rustler) {}
+}
+
+message Empty { }
+
+enum RustlerStatus {
+    connected = 0;
+    connecting = 1;
+    disconnected = 2;
+}
+
+enum RustlerControlAction {
+    connect = 0;
+    disconnect = 1;
+}
+
+message ManageRustlerDTO {
+    string name = 1;
+    RustlerControlAction action = 2;
+}
+
+message Rustler {
+    string name = 1;
+    RustlerStatus status = 2;
+    string nextRun = 3;
+    string nextStop = 4;
+    string lastRun = 5;
+    string lastStop = 6;
+    string lastUpdate = 7;
+}
+
+message Rustlers {
+    repeated Rustler rustlers = 1;
+}

@@ -1,0 +1,14 @@
+[package]
+name = "gateway"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "gateway"
+path = "src/lib.rs"
+
+[dependencies]
+entities = { path = "../entities" }
+eyre = { version = "0.6.12", default-features = false }
+

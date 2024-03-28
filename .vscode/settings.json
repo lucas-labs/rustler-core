@@ -1,25 +1,38 @@
 {
     "files.exclude": {
-        // ⚙️ config
-        "Taskfile.yaml": true,
-        ".cocorc": true,
-        ".task": true,
-        ".cargo": true,
-        // "Cargo.toml": true,
+        // // 🧩 modules
+        // "migration": true,
+        // // "entities": true,
 
-        // 📦
-        "Cargo.lock": true,
-        "target": true,
+        // // ⚙️ 
+        // ".env": true,
+        // "Taskfile.yaml": true,
+        // ".cocorc": true,
+        // ".task": true,
+        // ".cargo": true,
+        // ".github": true,
+        // "rustfmt.toml": true,
+        // // "**/**/Cargo.toml": true,
 
-        // 📝 readmes
-        "**/**/README.md": true,
-        "LICENSE": true,
+        // // 📦
+        // "Cargo.lock": true,
+        // "target": true,
 
-        // 🗑️
-        "check_size.py": true,
-        "*.code-workspace": true,
-        ".gitignore": true,
-        ".vscode": true,
-        ".git": true,
+        // // 📝 readmes
+        // "**/**/README.md": true,
+        // "LICENSE": true,
+
+        // // 🗑️
+        // "check_size.py": true,
+        // "*.code-workspace": true,
+        // // ".gitignore": true,
+        // ".vscode": true,
+        // ".git": true,
+
+        // // 🗄️ database
+        // "rustler.db": true,
+        // "rustler.db-shm": true,
+        // "rustler.db-wal": true,
+        // "rustler.db.bkp": true,
     }
 }

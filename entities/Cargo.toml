@@ -1,0 +1,13 @@
+[package]
+name = "entities"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[lib]
+name = "entities"
+path = "src/lib.rs"
+
+[dependencies]
+sea-orm = { version = "0.12.15", features = ["runtime-tokio-native-tls", "sqlx-sqlite", "macros"] }
+eyre = { version = "0.6.12", default-features = false }

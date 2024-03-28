@@ -52,5 +52,9 @@ for key, exe in files.items():
 
         sizefile.parent.mkdir(parents=True, exist_ok=True)
 
+        print(
+            f'{head(key)}: {fmt(diff_str)} (prev: {old_size}kb, now: {fmt(f"{str(new_size)}kb")})'
+        )
+
         with open(sizefile, 'w') as f:
             f.write(f'{new_size}')

@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package market;
+
+service MarketApi {
+    rpc GetAll (Empty) returns (Markets) {}
+    rpc Create (Market) returns (Market) {}
+}
+
+message Empty { }
+
+message Market {
+    string id = 1;
+    string short_name = 2;
+    string full_name = 3;
+    int32 opens_from = 4;
+    int32 opens_till = 5;
+    string open_time = 6;
+    string close_time = 7;
+    int32 pre_market_offset = 8;
+    int32 post_market_offset = 9;
+    int32 time_zone_offset = 10;
+}
+
+message Markets {
+    repeated Market markets = 1;
+}

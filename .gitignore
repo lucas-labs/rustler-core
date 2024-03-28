@@ -1,3 +1,6 @@
 /target
 .data/*.log
 .task
+
+/.env
+/rustler.db*

@@ -15,6 +15,7 @@
         },
         "lucodear-icons.files.associations": {
         
-        }
+        },
+        "rust-analyzer.checkOnSave": true
     }
 }
