@@ -5,7 +5,7 @@
         // "entities": true,
 
         // ⚙️ 
-        ".env": true,
+        // ".env": true,
         "Taskfile.yaml": true,
         ".cocorc": true,
         ".task": true,

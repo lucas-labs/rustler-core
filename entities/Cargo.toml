@@ -11,6 +11,7 @@ path = "src/lib.rs"
 [dependencies]
 # common
 eyre = { workspace = true, default-features = false }
+lool = { workspace = true }
 
 # external
 sea-orm = { version = "0.12.15", features = [

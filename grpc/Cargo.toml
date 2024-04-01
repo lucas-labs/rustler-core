@@ -10,7 +10,7 @@ path = "src/lib.rs"
 
 [dependencies]
 # common
-log = { workspace = true }
+lool = { workspace = true, features = ["logger"]}
 eyre = { workspace = true, default-features = false }
 
 # internal

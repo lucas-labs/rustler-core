@@ -37,4 +37,4 @@ tasks:
   lint:
     desc: 🧶 lint rustler
     cmds:
-      - cargo clippy --fix --workspace --allow-dirty
+      - cargo clippy --fix --workspace --allow-staged

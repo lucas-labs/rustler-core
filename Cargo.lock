@@ -767,6 +767,7 @@ name = "entities"
 version = "0.1.0"
 dependencies = [
  "eyre",
+ "lool",
  "sea-orm",
 ]
 
@@ -1095,7 +1096,7 @@ version = "0.1.0"
 dependencies = [
  "entities",
  "eyre",
- "log",
+ "lool",
  "prost",
  "tonic",
  "tonic-build",
@@ -1465,6 +1466,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "90ed8c1e510134f979dbc4f070f87d4313098b704861a105fe34231c70a3901c"
 dependencies = [
  "value-bag",
+]
+
+[[package]]
+name = "lool"
+version = "0.0.5"
+source = "sparse+http://lugit.local/api/packages/lucodear/cargo/"
+checksum = "c727e0c375380178e0b15f8f54f249e5e2a9e72c20475e8a7807f4c72d253106"
+dependencies = [
+ "bitflags 2.5.0",
+ "eyre",
+ "log",
 ]
 
 [[package]]
@@ -2250,7 +2262,7 @@ dependencies = [
  "entities",
  "eyre",
  "grpc",
- "log",
+ "lool",
  "tokio",
 ]
 

@@ -25,8 +25,8 @@ path = "app/main.rs"
 members = [".", "migration", "entities", "grpc"]
 
 [workspace.dependencies]
-log = { version = "0.4.21" }
-eyre = { version = "0.6.12" }
+lool = { version = "0.0.5", registry = "lugit" } # crates: disable-check
+eyre = { version = "0.6.12", default-features = false }
 
 [dependencies]
 # internal
@@ -34,8 +34,8 @@ entities = { path = "entities" }
 grpc = { path = "grpc" }
 
 # workspace
-log = { workspace = true }
 eyre = { workspace = true, default-features = false, features = ["auto-install"] }
+lool = { workspace = true, features = ["logger", "macros", "cli-stylize"] }
 
 # external
 tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
