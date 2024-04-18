@@ -13,13 +13,13 @@ message Market {
     string id = 1;
     string short_name = 2;
     string full_name = 3;
-    int32 opens_from = 4;
-    int32 opens_till = 5;
-    string open_time = 6;
-    string close_time = 7;
-    int32 pre_market_offset = 8;
-    int32 post_market_offset = 9;
-    int32 time_zone_offset = 10;
+    optional uint32 opens_from = 4;
+    optional uint32 opens_till = 5;
+    optional string open_time = 6;
+    optional string close_time = 7;
+    optional uint32 pre_market_offset = 8;
+    optional uint32 post_market_offset = 9;
+    optional string time_zone_offset = 10;
 }
 
 message Markets {

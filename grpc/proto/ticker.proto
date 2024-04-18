@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package ticker;
+
+service TickerApi {
+    rpc GetAll (Empty) returns (Tickers) {}
+    rpc Create (Ticker) returns (Ticker) {}
+    rpc Get (TickerId) returns (Ticker) {}
+}
+
+message TickerId {
+    string id = 1;
+}
+
+message TickerSymbol {
+    string symbol = 1;
+}
+
+message Empty { }
+
+message Ticker {
+    string id = 1;
+    string symbol = 2;
+    string market_id = 3;
+}
+
+message Tickers {
+    repeated Ticker tickers = 1;
+}

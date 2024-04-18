@@ -1,5 +1,5 @@
 fn main() {
-    let proto_files = vec!["./proto/rustler.proto", "./proto/market.proto"];
+    let proto_files = vec!["./proto/rustler.proto", "./proto/market.proto", "./proto/ticker.proto"];
 
     for proto_file in proto_files {
         compile_proto(proto_file);

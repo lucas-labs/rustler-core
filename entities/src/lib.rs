@@ -1,8 +1,28 @@
-pub mod market;
-pub mod ticker;
-
 pub use sea_orm;
 
+mod orm {
+    #[path = "market.rs"] pub mod market;
+    #[path = "ticker.rs"] pub mod ticker;
+}
+
+mod services {
+    #[path = "market.rs"] pub mod market;
+    #[path = "ticker.rs"] pub mod ticker;
+}
+
+/// market entities and services
+pub mod market {
+    pub use super::orm::market::*;
+    pub use super::services::market::*;
+}
+
+/// ticker entities and services
+pub mod ticker {
+    pub use super::orm::ticker::*;
+    pub use super::services::ticker::*;
+}
+
+/// database connection stuff
 pub mod db {
     use {
         eyre::Result,
@@ -25,14 +45,14 @@ pub mod db {
         conn_str
     }
 
-    pub async fn get_connection() -> Result<Arc<DatabaseConnection>> {
+    pub async fn get_connection() -> Result<DatabaseConnection> {
         let db_conn_str =
             std::env::var(RUSTLER_DATABASE).unwrap_or_else(|_| get_default_conn_str());
 
         let mut conn_opts = ConnectOptions::new(db_conn_str.to_owned());
         conn_opts.sqlx_logging(false);
 
-        let conn = Arc::new(Database::connect(conn_opts).await?);
+        let conn = Database::connect(conn_opts).await?;
 
         conn.query_one(Statement::from_string(
             DbBackend::Sqlite,

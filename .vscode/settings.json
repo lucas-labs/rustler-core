@@ -1,7 +1,7 @@
 {
     "files.exclude": {
         // 🧩 modules
-        "migration": true,
+        // "migration": true,
         // "entities": true,
 
         // ⚙️ 
@@ -24,12 +24,12 @@
         // 🗑️
         "check_size.py": true,
         "*.code-workspace": true,
-        // ".gitignore": true,
+        ".gitignore": true,
         ".vscode": true,
         ".git": true,
 
         // 🗄️ database
-        "rustler.db": true,
+        // "rustler.db": true,
         "rustler.db-shm": true,
         "rustler.db-wal": true,
         "rustler.db.bkp": true,

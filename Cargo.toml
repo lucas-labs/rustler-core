@@ -22,21 +22,26 @@ name = "rustler"
 path = "app/main.rs"
 
 [workspace]
-members = [".", "migration", "entities", "grpc"]
+members = [".", "migration", "entities", "grpc", "rustlers"]
 
 [workspace.dependencies]
-lool = { version = "0.0.5", registry = "lugit" } # crates: disable-check
+lool = { version = "0.1.4", registry = "lugit" }        # crates: disable-check
 eyre = { version = "0.6.12", default-features = false }
+tokio-tungstenite = { version = "0.21.0" }
 
 [dependencies]
 # internal
 entities = { path = "entities" }
 grpc = { path = "grpc" }
+rustlers = { path = "rustlers" }
 
 # workspace
-eyre = { workspace = true, default-features = false, features = ["auto-install"] }
-lool = { workspace = true, features = ["logger", "macros", "cli-stylize"] }
+eyre = { workspace = true, default-features = false, features = [
+    "auto-install",
+] }
+lool = { workspace = true }
 
 # external
-tokio = { version = "1.36.0", features = ["macros", "rt-multi-thread"] }
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
 dotenvy = "0.15.7"
+chrono = "0.4.37"

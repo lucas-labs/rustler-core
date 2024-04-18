@@ -34,6 +34,11 @@ tasks:
     cmds:
       - cargo +nightly fmt --all
 
+  test:
+    desc: 🧪 test lool
+    cmds:
+      - cargo nextest run --all-features --workspace
+
   lint:
     desc: 🧶 lint rustler
     cmds:
