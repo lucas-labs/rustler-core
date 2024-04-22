@@ -1,15 +1,14 @@
 pub mod binance;
+pub extern crate chrono;
+pub extern crate eyre;
 
 use {
     async_trait::async_trait,
     chrono::{DateTime, Local},
     entities::{market, ticker},
-    std::collections::HashMap,
     eyre::Result,
+    std::collections::HashMap,
 };
-
-pub extern crate eyre;
-pub extern crate chrono;
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum RustlerStatus {
@@ -73,6 +72,14 @@ impl Ticker {
             market: m.short_name.clone(),
         }
     }
+
+    pub fn many_from(tickers: &[ticker::Model], market: &market::Model) -> Vec<Self> {
+        tickers.iter().map(|t| Self::from(t, market)).collect()
+    }
+
+    pub fn key(&self) -> String {
+        format!("{}:{}", self.market, self.symbol)
+    }
 }
 
 pub trait RustlerAccessor {
@@ -117,9 +124,9 @@ pub trait RustlerAccessor {
 pub trait Rustler: RustlerAccessor + Send + Sync {
     // #region Unimplemented trait functions
     /// fn called after tickers are added to the rustler
-    fn on_add(&mut self, tickers: Vec<Ticker>) -> Result<()>;
+    fn on_add(&mut self, tickers: &[Ticker]) -> Result<()>;
     /// fn called after tickers are deleted from the rustler
-    fn on_delete(&mut self, tickers: Vec<Ticker>) -> Result<()>;
+    fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()>;
     /// connects the rustler to the data source
     async fn connect(&mut self) -> Result<()>;
     /// disconnects the rustler from the data source
@@ -165,16 +172,16 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
     }
 
     /// adds new tickers to the rustler
-    async fn add(&mut self, new_tickers: Vec<Ticker>) -> Result<()> {
+    async fn add(&mut self, new_tickers: &Vec<Ticker>) -> Result<()> {
         let tickers = self.tickers_mut();
 
-        for new_ticker in &new_tickers {
+        for new_ticker in new_tickers {
             // if the ticker already exists in the tickers map, skip it
-            if tickers.contains_key(&new_ticker.symbol) {
+            if tickers.contains_key(&new_ticker.key()) {
                 continue;
             }
 
-            tickers.insert(new_ticker.symbol.clone(), new_ticker.clone());
+            tickers.insert(new_ticker.key(), new_ticker.clone());
         }
 
         if self.opts().connect_on_add {
@@ -189,11 +196,11 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
     }
 
     /// deletes tickers from the rustler
-    async fn delete(&mut self, new_tickers: Vec<Ticker>) -> Result<()> {
+    async fn delete(&mut self, new_tickers: &Vec<Ticker>) -> Result<()> {
         let tickers = self.tickers_mut();
 
-        for new_ticker in &new_tickers {
-            tickers.remove(&new_ticker.symbol);
+        for new_ticker in new_tickers {
+            tickers.remove(&new_ticker.key());
         }
 
         // if after deleting the tickers the tickers map is
@@ -232,7 +239,10 @@ macro_rules! rustler_accessors {
         fn status(&self) -> &$crate::rustlers::RustlerStatus {
             &self.status
         }
-        fn set_status(&mut self, status: $crate::rustlers::RustlerStatus) -> $crate::rustlers::eyre::Result<()> {
+        fn set_status(
+            &mut self,
+            status: $crate::rustlers::RustlerStatus,
+        ) -> $crate::rustlers::eyre::Result<()> {
             self.status = status;
             self.handle_status_change()?;
 
@@ -247,31 +257,56 @@ macro_rules! rustler_accessors {
         fn next_run(&self) -> &$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local> {
             &self.next_run
         }
-        fn set_next_run(&mut self, next_run: $crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>) {
+        fn set_next_run(
+            &mut self,
+            next_run: $crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>,
+        ) {
             self.next_run = next_run;
         }
-        fn next_stop(&self) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
+        fn next_stop(
+            &self,
+        ) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
             &self.next_stop
         }
-        fn set_next_stop(&mut self, next_stop: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>) {
+        fn set_next_stop(
+            &mut self,
+            next_stop: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>,
+        ) {
             self.next_stop = next_stop;
         }
-        fn last_run(&self) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
+        fn last_run(
+            &self,
+        ) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
             &self.last_run
         }
-        fn set_last_run(&mut self, last_run: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>) {
+        fn set_last_run(
+            &mut self,
+            last_run: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>,
+        ) {
             self.last_run = last_run;
         }
-        fn last_stop(&self) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
+        fn last_stop(
+            &self,
+        ) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
             &self.last_stop
         }
-        fn set_last_stop(&mut self, last_stop: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>) {
+        fn set_last_stop(
+            &mut self,
+            last_stop: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>,
+        ) {
             self.last_stop = last_stop;
         }
-        fn last_update(&self) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
+        fn last_update(
+            &self,
+        ) -> &Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>> {
             &self.last_update
         }
-        fn set_last_update(&mut self, last_update: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>) {
+        fn set_last_update(
+            &mut self,
+            last_update: Option<
+                $crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>,
+            >,
+        ) {
             self.last_update = last_update;
         }
         fn opts(&self) -> &$crate::rustlers::RustlerOpts {

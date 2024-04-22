@@ -1,16 +1,21 @@
-use entities::{market, sea_orm::DatabaseConnection, ticker};
-use eyre::{Ok, Result};
-use lool::{
-    logger::{info, warn},
-    s,
-    sched::{
-        recur, ruleset, scheduler::tokio::Scheduler, utils::parse_time, RecurrenceRuleSet,
-        SchedulingRule,
+use {
+    entities::{market, sea_orm::DatabaseConnection, ticker},
+    eyre::Result,
+    lool::{
+        logger::{info, warn},
+        sched::{
+            recur, ruleset, scheduler::tokio::Scheduler, utils::parse_time, RecurrenceRuleSet,
+            SchedulingRule,
+        },
     },
+    std::sync::Arc,
+    tokio::sync::Mutex,
 };
-use std::collections::HashMap;
 
-use crate::rustlers::{Rustler, Ticker};
+use crate::{
+    rustlerjar::RustlerJar,
+    rustlers::{Rustler, Ticker},
+};
 
 // interface MarketExecData {
 //     entity: MarketModel;
@@ -23,27 +28,28 @@ use crate::rustlers::{Rustler, Ticker};
 //     // subscription?: Subscription
 // }]]
 
-struct MarketExecData {
-    // entity: MarketModel,
-    // startJob?: Job,
-    // stopJob?: Job,
-}
-
-type RustlerFactory = Box<dyn Send + Sync + FnMut(&market::Model) -> Option<Box<dyn Rustler>>>;
+// struct MarketExecData {
+// entity: MarketModel,
+// startJob?: Job,
+// stopJob?: Job,
+// }
 
 pub struct RustlersSvc {
     market_svc: market::Service,
-    factory: RustlerFactory,
+    sched: Scheduler,
+    rustlers: RustlerJar,
 }
 
 impl RustlersSvc {
-    pub async fn new(conn: DatabaseConnection) -> Self {
+    /// creates a new instance of the `RustlersSvc`
+    pub async fn new(conn: DatabaseConnection, rustlers: Option<RustlerJar>) -> Self {
         let market_svc = market::Service::new(conn).await;
-        let factory = |_mkt: &market::Model| None;
+        let sched = Scheduler::new();
 
         Self {
             market_svc,
-            factory: Box::new(factory),
+            rustlers: rustlers.unwrap(),
+            sched,
         }
     }
 
@@ -54,7 +60,7 @@ impl RustlersSvc {
         let markets = self.market_svc.get_all_with_tickers().await?;
 
         for (market, tickers) in markets {
-            self.start_rustler_for((market, tickers)).await?;
+            self.schedule_rustler_for((market, tickers)).await?;
         }
 
         Ok(())
@@ -65,29 +71,45 @@ impl RustlersSvc {
         todo!()
     }
 
-    /// gets the corresponding rustler for the given market and starts it
+    /// gets the right rustler for the given market and starts it
     ///
     /// depending on the market configuraation, the rustler might be started
     /// immediately or its start might be scheduled for a later time
     ///
     /// this function also schedules the stop of the rustler at the end of the market
     /// trading hours if the market is configured to stop at a specific time
-    async fn start_rustler_for(
+    async fn schedule_rustler_for(
         &mut self,
         market: (market::Model, Vec<ticker::Model>),
     ) -> Result<()> {
         let (market, tickers) = market;
+        let tickers: Vec<Ticker> = tickers.into_iter().map(|t| Ticker::from(&t, &market)).collect();
+
         let rules = self.get_schedule_rules_for(&market)?;
-        let rustler = (self.factory)(&market);
+        let rustler = self.rustlers.get(&market);
 
         if let Some(rustler) = rustler {
             if let Some((start, end)) = rules {
-                let mut sched = Scheduler::new();
-                let start_name = format!("start-{}", market.short_name);
-                let end_name = format!("end-{}", market.short_name);
+                let start_name = format!("start-rustler-{}", market.short_name);
+                let end_name = format!("end-rustler-{}", market.short_name);
 
-                let start_job = sched.schedule(start_name, || async move {}, start).await;
-                let end_job = sched.schedule(end_name, || async move {}, end).await;
+                let _start_job = self
+                    .sched
+                    .schedule_fut(
+                        start_name.to_owned(),
+                        Self::start_rustler_for(rustler.clone(), tickers.clone()),
+                        start,
+                    )
+                    .await;
+
+                let _end_job = self
+                    .sched
+                    .schedule_fut(
+                        end_name.to_owned(),
+                        Self::stop_rustler_for(rustler.clone(), tickers),
+                        end,
+                    )
+                    .await;
 
                 Ok(())
             } else {
@@ -123,44 +145,56 @@ impl RustlersSvc {
         Ok(Some((recur(&start_rule), recur(&stop_rule))))
     }
 
-    /// get the rustler according to the market
-    fn get_rustler_for(&mut self, market: &market::Model) -> Option<Box<dyn Rustler>> {
-        let scrapper = (self.factory)(market);
-
-
-        scrapper
-    }
-
     /// starts a rustler by adding the tickers to it
-    async fn start_rustler(
-        rustler: &mut Box<dyn Rustler>,
-        market: market::Model,
-        tickers: Vec<ticker::Model>,
-    ) -> Result<()> {
-        if tickers.len() > 0 {
-            let tickers: Vec<Ticker> =
-                tickers.into_iter().map(|t| Ticker::from(&t, &market)).collect();
+    async fn start_rustler_for(rustler: Arc<Mutex<Box<dyn Rustler>>>, tickers: Vec<Ticker>) {
+        let mut rustler = rustler.lock().await;
+        match rustler.start().await {
+            Ok(()) => {
+                if !tickers.is_empty() {
+                    info!("Rustler {} started for market", rustler.name());
 
-            rustler.add(tickers).await?;
-        }
-
-        Ok(())
+                    match rustler.add(&tickers).await {
+                        Ok(()) => info!(
+                            "Tickers {:?} added to rustler '{}'",
+                            tickers,
+                            rustler.name()
+                        ),
+                        Err(e) => warn!(
+                            "Failed to add tickers to rustler '{}': {}",
+                            rustler.name(),
+                            e
+                        ),
+                    }
+                }
+            }
+            Err(e) => warn!("Failed to start rustler '{}': {}", rustler.name(), e),
+        };
     }
 
-    /// stops a rustler by deleting all its tickers
-    async fn stop_rustler(
-        rustler: &mut Box<dyn Rustler>,
-        market: market::Model,
-        tickers: Vec<ticker::Model>,
-    ) -> Result<()> {
-        if tickers.len() > 0 {
-            let tickers: Vec<Ticker> =
-                tickers.into_iter().map(|t| Ticker::from(&t, &market)).collect();
+    /// stops a rustler for the given market/tickers
+    ///
+    /// if the rustler is being used by other markets, or the ticker list does not contain
+    /// all the tickers that the rustler is using for the given market, the rustler will not
+    /// be stopped, but will stop gathering data for the given tickers.
+    async fn stop_rustler_for(rustler: Arc<Mutex<Box<dyn Rustler>>>, tickers: Vec<Ticker>) {
+        let mut rustler = rustler.lock().await;
 
-            rustler.delete(tickers).await?;
+        if !tickers.is_empty() {
+            // we delete the tickers from the rustler, but it will still be running if
+            // there are other markets using the same rustler.
+            match rustler.delete(&tickers).await {
+                Ok(()) => info!(
+                    "Tickers {:?} removed from rustler '{}'",
+                    tickers,
+                    rustler.name()
+                ),
+                Err(e) => warn!(
+                    "Failed to remove tickers from rustler '{}': {}",
+                    rustler.name(),
+                    e
+                ),
+            }
         }
-
-        Ok(())
     }
 }
 

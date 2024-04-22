@@ -73,7 +73,7 @@ impl MarketApi for GrpcServer {
 
         let response = match result {
             Ok(mkts) => Ok(Response::new(Markets {
-                markets: mkts.to_owned().into_iter().map(Market::from_model).collect(),
+                markets: mkts.iter().cloned().map(Market::from_model).collect(),
             })),
             Err(err) => Err(handle_sql_err(err, "Getting", "markets")),
         };

@@ -1,5 +1,8 @@
 mod services {
-    use entities::sea_orm::{DbErr, SqlErr};
+    use {
+        entities::sea_orm::{DbErr, SqlErr},
+        lool::s,
+    };
 
     pub mod market;
     pub mod ticker;
@@ -12,7 +15,7 @@ mod services {
                 tonic::Status::already_exists(format!("{} already exists", entity_name))
             }
             Some(SqlErr::ForeignKeyConstraintViolation(_)) => {
-                tonic::Status::failed_precondition(format!("Related entity does not exist"))
+                tonic::Status::failed_precondition(s!("Related entity does not exist"))
             }
             _ => tonic::Status::internal(format!("Error {} {}", action, entity_name)),
         }

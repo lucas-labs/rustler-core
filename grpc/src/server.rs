@@ -3,7 +3,7 @@ use {
     entities::{market, sea_orm::DatabaseConnection, ticker},
     eyre::Result,
     lool::{cli::stylize::Stylize, logger::info},
-    std::{net::SocketAddr, sync::Arc},
+    std::net::SocketAddr,
     tonic::transport::Server,
 };
 

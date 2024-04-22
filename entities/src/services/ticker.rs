@@ -4,7 +4,7 @@ use {
         ticker::{Entity as Ticker, Model as TickerModel},
     },
     eyre::Result,
-    sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel, QueryFilter}
+    sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel, QueryFilter},
 };
 
 pub struct Service {

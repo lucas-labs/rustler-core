@@ -1,7 +1,8 @@
 use {
     dotenvy::dotenv,
     eyre::Result,
-    lool::logger::{info, ConsoleLogger, Level}, tokio::{join, select},
+    lool::logger::{info, ConsoleLogger, Level},
+    tokio::join,
 };
 
 // TODO: here we will trigger the start of both the grpc server and the websocket gateway
@@ -13,11 +14,11 @@ async fn main() -> Result<()> {
 
     dotenv()?;
     let conn = entities::db::get_connection().await?;
-    let mut rustler = rustlers::svc::RustlersSvc::new(conn.clone()).await;
+    let mut rustler = rustlers::svc::RustlersSvc::new(conn.clone(), None).await;
 
-    let (grpc_res, rustlers_res) = join! {
+    let (_grpc_res, _rustlers_res) = join! {
         grpc::server::start(conn.clone()),
-        rustler.start(),        
+        rustler.start(),
     };
 
     info!("Shutting down");

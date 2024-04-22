@@ -1,9 +1,7 @@
 use {
     crate::{
         rustler,
-        rustlers::{
-            Rustler, RustlerAccessor, RustlerStatus, Ticker
-        },
+        rustlers::{Rustler, RustlerAccessor, RustlerStatus, Ticker},
     },
     async_trait::async_trait,
     eyre::Result,
@@ -23,7 +21,7 @@ rustler!(
 );
 
 impl BinanceRustler {
-    pub fn new() -> impl Rustler {
+    pub fn create() -> impl Rustler {
         Self::default()
     }
 }
@@ -51,13 +49,13 @@ impl Rustler for BinanceRustler {
         Ok(())
     }
 
-    fn on_add(&mut self, tickers: Vec<Ticker>) -> Result<()> {
+    fn on_add(&mut self, tickers: &[Ticker]) -> Result<()> {
         info!("Adding tickers: {:?}", tickers);
 
         Ok(())
     }
 
-    fn on_delete(&mut self, tickers: Vec<Ticker>) -> Result<()> {
+    fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()> {
         info!("Deleting tickers: {:?}", tickers);
 
         Ok(())

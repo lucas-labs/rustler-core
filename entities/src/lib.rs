@@ -1,25 +1,27 @@
 pub use sea_orm;
 
 mod orm {
-    #[path = "market.rs"] pub mod market;
-    #[path = "ticker.rs"] pub mod ticker;
+    #[path = "market.rs"]
+    pub mod market;
+    #[path = "ticker.rs"]
+    pub mod ticker;
 }
 
 mod services {
-    #[path = "market.rs"] pub mod market;
-    #[path = "ticker.rs"] pub mod ticker;
+    #[path = "market.rs"]
+    pub mod market;
+    #[path = "ticker.rs"]
+    pub mod ticker;
 }
 
 /// market entities and services
 pub mod market {
-    pub use super::orm::market::*;
-    pub use super::services::market::*;
+    pub use super::{orm::market::*, services::market::*};
 }
 
 /// ticker entities and services
 pub mod ticker {
-    pub use super::orm::ticker::*;
-    pub use super::services::ticker::*;
+    pub use super::{orm::ticker::*, services::ticker::*};
 }
 
 /// database connection stuff
@@ -30,7 +32,6 @@ pub mod db {
         sea_orm::{
             ConnectOptions, ConnectionTrait, Database, DatabaseConnection, DbBackend, Statement,
         },
-        std::sync::Arc,
     };
 
     const RUSTLER_DATABASE: &str = "RUSTLER_DATABASE";

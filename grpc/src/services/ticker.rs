@@ -79,7 +79,7 @@ impl TickerApi for GrpcServer {
 
         let response = match result {
             Ok(mkts) => Ok(Response::new(Tickers {
-                tickers: mkts.to_owned().into_iter().map(Ticker::from_model).collect(),
+                tickers: mkts.iter().cloned().map(Ticker::from_model).collect(),
             })),
             Err(err) => Err(handle_sql_err(err, "Getting", "tickers")),
         };
