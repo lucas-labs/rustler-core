@@ -12,6 +12,7 @@ path = "src/lib.rs"
 # workspace
 eyre = { workspace = true, default-features = false }
 tokio-tungstenite = { workspace = true }
+tokio = { workspace = true }
 lool = { workspace = true, features = [
     "logger",
     "sched.tokio",

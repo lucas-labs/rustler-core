@@ -1501,9 +1501,9 @@ dependencies = [
 
 [[package]]
 name = "lool"
-version = "0.1.4"
+version = "0.2.0"
 source = "sparse+http://lugit.local/api/packages/lucodear/cargo/"
-checksum = "4320ce16557a892f40c0a776371ac0c3cda2c9312c83065a4ab2a1facf571539"
+checksum = "2f76ed1e53da60cca591a6811cfcda015b19d1976c85b89c708e5ea714a5fb41"
 dependencies = [
  "bitflags 2.5.0",
  "chrono",
@@ -2313,6 +2313,7 @@ dependencies = [
  "eyre",
  "getset",
  "lool",
+ "tokio",
  "tokio-tungstenite",
  "tonic-build",
 ]
