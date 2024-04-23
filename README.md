@@ -22,13 +22,15 @@ Also, this library is built using the `Rust` programming language... so, ***rust
 
 This library defines the core functionality for a `rustler`. It includes the following:
 
-- A `Rustler` trait that defines the core functionality for a `rustler`.
-- A `RustlersSvc` which orchestrates the `rustlers` at runtime, scheduling them to scrape stock pricing data between market hours.
+- A [`Rustler`](./lib/rustlers/rustlers.rs) trait that defines the core functionality for a `rustler`.
+- A [`RustlersSvc`](./lib/rustlers/svc.rs) which orchestrates the `rustlers` at runtime, scheduling them to scrape stock pricing data between market hours.
 
 Apart from the above, this library also defines:
 
-- a database schema for storing market hours, which is used by the `RustlersSvc` to schedule the `rustlers`.
-- a grpc service to interact with the rustlers database.
+- a [database schema](./lib/entities/orm/) for storing market hours, which is used by the `RustlersSvc` to schedule the `rustlers`.
+- initial [database migrations](./lib/entities/migration) to create the schema.
+- a [grpc server](./lib/grpc/) to interact with the rustlers database.
+- <img alt="unimplemented" src="./.github/img/todo.svg" height="12"> a [websocket gateway server](./lib/socket/) to stream stock pricing data to subscribed clients 
 
 > [!NOTE]
 > 
@@ -38,3 +40,7 @@ Apart from the above, this library also defines:
 > Although this library contains the core and abstract functionality for the rustlers, it doesn't include any concrete implementation for them.
 > 
 > Actual concrete implementations for each market cannot be published for many reasons.
+
+## Example
+
+Check the [examples](./examples) directory for an example of how to use this library.
