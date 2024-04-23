@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/img/rustler.svg" height="256"></p>
+<p align="center"><img src=".github/img/rustler-core-logo.svg" height="264"></p>
 
 <br>
 <br>
