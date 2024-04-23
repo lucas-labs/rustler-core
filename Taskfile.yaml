@@ -47,4 +47,4 @@ tasks:
   publish:
     desc: 🚀 publish lool
     cmds:
-      - cargo publish --registry lugit
+      - cargo publish --registry lugit-sa
