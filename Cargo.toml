@@ -1,6 +1,6 @@
 [package]
 name = "rustler-core"
-version = "0.0.1-rc.1"
+version = "0.0.1"
 edition = "2021"
 description = "🤠 » rustler-core market data extractor core functionality"
 authors = ["Lucas Colombo <lucas@lucode.ar>"]
@@ -37,7 +37,7 @@ sea-orm-migration = { version = "0.12.15", features = [
 ] }
 
 [dependencies.lool]
-version = "0.2.0" # crates: disable-check
+version = "^0.2.0" # crates: disable-check
 registry = "lugit"
 features = [
     "cli.stylize",
