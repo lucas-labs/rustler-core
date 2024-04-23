@@ -43,3 +43,8 @@ tasks:
     desc: 🧶 lint rustler
     cmds:
       - cargo clippy --fix --workspace --allow-staged
+
+  publish:
+    desc: 🚀 publish lool
+    cmds:
+      - cargo publish --registry lugit
