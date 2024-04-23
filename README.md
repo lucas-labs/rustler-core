@@ -35,5 +35,6 @@ Apart from the above, this library also defines:
 > This library defines a _rustler_ as a service that scrapes stock pricing data for a
 > particular market.
 > 
-> Although this library contains the core and abstract functionality for the rustlers, it doesn't include any concrete implementation for them. In other words, this library includes traits and structs that can be used to build a `rustler`).
+> Although this library contains the core and abstract functionality for the rustlers, it doesn't include any concrete implementation for them.
+> 
 > Actual concrete implementations for each market cannot be published for many reasons.
