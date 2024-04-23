@@ -1,48 +1,51 @@
 [package]
-name = "rustler"
+name = "rustler-core"
 version = "0.0.0-alpha.0"
 edition = "2021"
-description = "🤠 » single-action data extractor"
+description = "🤠 » rustler-core market data extractor core functionality"
 authors = ["Lucas Colombo <lucas@lucode.ar>"]
-publish = false
+build = "lib/build.rs"
 
-[profile.release]
-strip = true
-lto = true
-codegen-units = 16
-opt-level = 'z'
-panic = "abort"
-rpath = false
-overflow-checks = false
-debug = 0
-debug-assertions = false
-
-[[bin]]
-name = "rustler"
-path = "app/main.rs"
-
-[workspace]
-members = [".", "migration", "entities", "grpc", "rustlers"]
-
-[workspace.dependencies]
-lool = { version = "0.2.0", registry = "lugit" }        # crates: disable-check
-eyre = { version = "0.6.12", default-features = false }
-tokio-tungstenite = { version = "0.21.0" }
-tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
+[lib]
+path = "lib/lib.rs"
 
 [dependencies]
-# internal
-entities = { path = "entities" }
-grpc = { path = "grpc" }
-rustlers = { path = "rustlers" }
-
-# workspace
-eyre = { workspace = true, default-features = false, features = [
-    "auto-install",
-] }
-lool = { workspace = true }
-tokio = { workspace = true }
-
-# external
+# utils
+eyre = { version = "0.6.12", default-features = false }
 dotenvy = "0.15.7"
 chrono = "0.4.37"
+getset = "0.1.2"
+
+# async
+tokio = { version = "1.37.0", features = ["macros", "rt-multi-thread"] }
+async-trait = "0.1.79"
+
+# grpc & websocket
+tokio-tungstenite = { version = "0.21.0" }
+tonic = "0.11.0"
+prost = "0.12.3" # protocol buffers
+
+# database
+sea-orm = { version = "0.12.15", features = [
+    "runtime-tokio-native-tls",
+    "sqlx-sqlite",
+    "macros",
+] }
+sea-orm-migration = { version = "0.12.15", features = [
+    "runtime-tokio-native-tls",
+    "sqlx-sqlite",
+] }
+
+[dependencies.lool]
+version = "0.2.0" # crates: disable-check
+registry = "lugit"
+features = [
+    "cli.stylize",
+    "logger",
+    "sched.tokio",
+    "sched.rule-recurrence",
+    "macros",
+]
+
+[build-dependencies]
+tonic-build = "0.11.0"

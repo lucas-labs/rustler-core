@@ -16,7 +16,7 @@ tasks:
   run:watch:
     desc: 🚀 watch rustler
     cmds:
-      - cargo watch -c -x "run"
+      - cargo watch -c -x "run --example=rustler"
 
   build:watch:
     desc: 🚀 watch rustler «build»
