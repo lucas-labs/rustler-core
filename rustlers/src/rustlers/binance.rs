@@ -40,11 +40,22 @@ impl Rustler for BinanceRustler {
             BINANCE_WSS_URL.bright_green()
         );
 
+        self.set_status(RustlerStatus::Connected)?;
+
         Ok(())
     }
 
     async fn disconnect(&mut self) -> Result<()> {
+        if self.status == RustlerStatus::Disconnected || self.status == RustlerStatus::Disconnecting
+        {
+            return Ok(());
+        }
+
+        self.set_status(RustlerStatus::Disconnecting)?;
+
         info!("Disconnecting from Binance WSS");
+
+        self.set_status(RustlerStatus::Disconnected)?;
 
         Ok(())
     }

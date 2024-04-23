@@ -21,11 +21,13 @@ use {
 #[macro_export]
 macro_rules! rustlerjar {
     ($($($name:expr),* => $rustler:ident),* $(,)?) => {{
-        let mut instances: Vec<Box<dyn Rustler>> = Vec::new();
+        use $crate::rustlers::RustlerAccessor;
+
+        let mut instances: Vec<Box<dyn $crate::rustlers::Rustler>> = Vec::new();
         let mut mappings = std::collections::HashMap::new();
 
         $(
-            let instance = Box::new($rustler::new());
+            let instance = Box::new($rustler::create());
             $(
                 mappings.insert($name.to_string(), instance.name());
             )*

@@ -2,6 +2,7 @@ use {
     dotenvy::dotenv,
     eyre::Result,
     lool::logger::{info, ConsoleLogger, Level},
+    rustlers::{rustlerjar, rustlers::binance::BinanceRustler, svc::RustlersSvc},
     tokio::join,
 };
 
@@ -14,7 +15,13 @@ async fn main() -> Result<()> {
 
     dotenv()?;
     let conn = entities::db::get_connection().await?;
-    let mut rustler = rustlers::svc::RustlersSvc::new(conn.clone(), None).await;
+    let mut rustler = RustlersSvc::new(
+        conn.clone(),
+        rustlerjar! {
+            "BINANCE" => BinanceRustler
+        },
+    )
+    .await;
 
     let (_grpc_res, _rustlers_res) = join! {
         grpc::server::start(conn.clone()),

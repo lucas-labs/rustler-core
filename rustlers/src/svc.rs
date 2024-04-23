@@ -42,13 +42,13 @@ pub struct RustlersSvc {
 
 impl RustlersSvc {
     /// creates a new instance of the `RustlersSvc`
-    pub async fn new(conn: DatabaseConnection, rustlers: Option<RustlerJar>) -> Self {
+    pub async fn new(conn: DatabaseConnection, rustlers: RustlerJar) -> Self {
         let market_svc = market::Service::new(conn).await;
         let sched = Scheduler::new();
 
         Self {
             market_svc,
-            rustlers: rustlers.unwrap(),
+            rustlers,
             sched,
         }
     }
@@ -68,6 +68,11 @@ impl RustlersSvc {
 
     /// stops all rustlers and then starts them again
     pub async fn restart(&self) -> Result<()> {
+        // TODO: restart all rustlers; this method should clear everything we set up about the
+        //       rustlers and then call `start` again. here we will need access to the job handlers
+        //       which we are not storing right now, so we're going to need to store them in the
+        //       `RustlersSvc` struct
+
         todo!()
     }
 
@@ -89,27 +94,46 @@ impl RustlersSvc {
         let rustler = self.rustlers.get(&market);
 
         if let Some(rustler) = rustler {
-            if let Some((start, end)) = rules {
+            if let Some((start, stop)) = rules {
                 let start_name = format!("start-rustler-{}", market.short_name);
                 let end_name = format!("end-rustler-{}", market.short_name);
 
-                let _start_job = self
+                // TODO: we will need to store the job handlers in the `RustlersSvc` struct
+                //       so that we can stop them when we need to restart the rustlers
+
+                let start_job = self
                     .sched
                     .schedule_fut(
                         start_name.to_owned(),
                         Self::start_rustler_for(rustler.clone(), tickers.clone()),
-                        start,
+                        start.clone(),
                     )
                     .await;
 
-                let _end_job = self
+                let end_job = self
                     .sched
                     .schedule_fut(
                         end_name.to_owned(),
-                        Self::stop_rustler_for(rustler.clone(), tickers),
-                        end,
+                        Self::stop_rustler_for(rustler.clone(), tickers.clone()),
+                        stop.clone(),
                     )
                     .await;
+
+                info!(
+                    "Scheduled next execution for start job {start_name} for market '{}' at {:?}",
+                    market.short_name,
+                    start_job.get_next_run()
+                );
+                info!(
+                    "Scheduled next execution for stop job {end_name} for market '{}' at {:?}",
+                    market.short_name,
+                    end_job.get_next_run()
+                );
+
+                if should_be_running_now(start, stop) {
+                    info!("Starting '{start_name}' right away");
+                    Self::start_rustler_for(rustler.clone(), tickers).await;
+                }
 
                 Ok(())
             } else {
@@ -218,4 +242,23 @@ fn make_rule(
 enum Op {
     Add,
     Sub,
+}
+
+/// checks if the rustler should be running now
+fn should_be_running_now(start: SchedulingRule, stop: SchedulingRule) -> bool {
+    let now = chrono::Local::now();
+
+    let start_date = start.next_from(now);
+    let stop_date = stop.next_from(now);
+
+    // if start date is Some in the past and stop_date is None, we should be running
+
+    if start_date.is_some() && stop_date.is_none() {
+        return true;
+    }
+
+    match (start_date, stop_date) {
+        (Some(start), Some(stop)) => stop < start && now < stop,
+        _ => true,
+    }
 }
