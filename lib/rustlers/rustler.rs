@@ -14,6 +14,7 @@ use {
     },
 };
 
+/// 🐎 » a struct representing the status of a rustler at a given time
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum RustlerStatus {
     Connecting,
@@ -23,6 +24,7 @@ pub enum RustlerStatus {
     Disconnected,
 }
 
+/// 🐎 » an enum representing the different types of market hours
 #[derive(Debug, Clone)]
 pub enum MarketHourType {
     Pre = 0,
@@ -49,6 +51,8 @@ impl From<u8> for MarketHourType {
     }
 }
 
+/// 🐎 » a struct storing a ticker's quote at a given time, and the change in price since the last
+/// quote
 #[derive(Debug, Clone)]
 pub struct Quote {
     pub id: String,
@@ -93,6 +97,9 @@ impl ToRedisKey for Quote {
 }
 
 impl ToFromRedisMessage for Quote {
+    /// 🐎 » converts a `Quote` to a serialized message that can be sent over a redis channel
+    ///
+    /// the message is in the format `id¦market¦price¦change_percent¦time¦market_hours`
     fn as_message(&self) -> String {
         // id¦market¦price¦change_percent¦time¦market_hours
         format!(
@@ -349,6 +356,9 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
     }
 }
 
+/// macro that expands to the accessor functions for a `Rustler` struct
+///
+/// for internal use
 #[macro_export]
 macro_rules! rustler_accessors {
     (

@@ -10,6 +10,7 @@ use {
     tonic::transport::Server,
 };
 
+/// the environment variable to set the gRPC server address
 const RUSTLER_GRPC_API_ADDR: &str = "RUSTLER_GRPC_API_ADDR";
 
 /// 🐎 » starts the rustler gRPC server

@@ -16,6 +16,7 @@ pub mod market_mod {
 }
 
 impl Market {
+    /// 🐎 » converts a `Market` entity from gRPC to a database sea-orm `market::Model`
     fn into_model(self) -> market::Model {
         market::Model {
             id: self.id,
@@ -31,6 +32,7 @@ impl Market {
         }
     }
 
+    /// 🐎 » converts a `market::Model` database entity to a gRPC `Market` entity
     fn from_model(model: market::Model) -> Self {
         Self {
             id: model.id,
@@ -67,6 +69,7 @@ impl GrpcServer {
 
 #[tonic::async_trait]
 impl MarketApi for GrpcServer {
+    /// retrieves and returns a market entity from the database, given its id
     async fn get_all(&self, _: Request<Empty>) -> Result<Response<Markets>, Status> {
         let start = Instant::now();
         let result = self.svc.get_all().await;
@@ -83,6 +86,7 @@ impl MarketApi for GrpcServer {
         response
     }
 
+    /// retrieves and returns all market entities from the database
     async fn create(&self, market: Request<Market>) -> Result<Response<Market>, Status> {
         let start = Instant::now();
         let mkt = market.into_inner().into_model();

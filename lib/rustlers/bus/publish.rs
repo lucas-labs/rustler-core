@@ -5,6 +5,8 @@ use {
 };
 
 /// 🐎 » bus **Publisher**
+///
+/// allows to push a message or resource to the bus
 #[derive(Clone)]
 pub struct Publisher<RM: RedisMessage> {
     conn: MultiplexedConnection,

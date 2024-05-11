@@ -2,9 +2,9 @@
 
 use sea_orm::entity::prelude::*;
 
+/// 🐎 » ticker entity model
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq)]
 #[sea_orm(table_name = "ticker")]
-/// 🐎 » ticker entity model
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub id: String,

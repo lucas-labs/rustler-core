@@ -14,6 +14,8 @@ use {
 // https://github.com/exein-io/pulsar/blob/99ad35c8d13eaf1a37d7b6a9dcb812a5a1231d00/crates/pulsar-core/src/bus.rs
 
 /// 🐎 » bus **Subscriber**
+///
+/// allows to subscribe to a redis key pattern and receive messages from the redis bus
 pub struct Subscriber<RM: RedisMessage> {
     // TODO: replace with storing tokio multiplexed connection like in publish.rs when redis@0.26.0
     //       is released see https://github.com/redis-rs/redis-rs/issues/1137.
@@ -50,17 +52,33 @@ impl<RM: RedisMessage> Subscriber<RM> {
         })
     }
 
+    /// 🐎 » set the pattern to subscribe to
     pub fn with_pattern(&mut self, pattern: &str) -> &mut Self {
         self.pattern = s!(pattern);
         self
     }
 
+    /// 🐎 » returns the pattern used to subscribe to the redis bus, including the prefix if set
     pub fn get_pattern(&self) -> String {
         key(self.get_prefix(), self.pattern.clone())
     }
 
-    /// 🐎 » subscribe to a channel
-    pub async fn start_streaming(&mut self) -> Result<()> {
+    /// 🐎 » **stream**
+    ///
+    /// returns an `Observable` stream of messages from the redis bus
+    pub async fn stream(&mut self) -> Result<CloneableBoxOpThreads<RM, Infallible>> {
+        if self.subject.is_none() {
+            self.start_streaming().await?;
+        }
+
+        match self.subject.as_ref() {
+            Some(subject) => Ok(subject.clone().box_it()),
+            None => fail!("Could not start streaming messages from redis bus"),
+        }
+    }
+
+    /// subscribe to the redis feed
+    async fn start_streaming(&mut self) -> Result<()> {
         if self.subject.is_none() {
             self.subject = Some(SubjectThreads::default());
         }
@@ -98,16 +116,5 @@ impl<RM: RedisMessage> Subscriber<RM> {
         }
 
         Ok(())
-    }
-
-    pub async fn stream(&mut self) -> Result<CloneableBoxOpThreads<RM, Infallible>> {
-        if self.subject.is_none() {
-            self.start_streaming().await?;
-        }
-
-        match self.subject.as_ref() {
-            Some(subject) => Ok(subject.clone().box_it()),
-            None => fail!("Could not start streaming messages from redis bus"),
-        }
     }
 }

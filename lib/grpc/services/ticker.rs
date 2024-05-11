@@ -15,6 +15,7 @@ pub mod ticker_mod {
 }
 
 impl Ticker {
+    /// 🐎 » converts a `Ticker` entity from gRPC to a database sea-orm `ticker::Model`
     fn into_model(self) -> ticker::Model {
         ticker::Model {
             id: self.id,
@@ -23,6 +24,7 @@ impl Ticker {
         }
     }
 
+    /// 🐎 » converts a `ticker::Model` database entity to a gRPC `Ticker` entity
     fn from_model(model: ticker::Model) -> Self {
         Self {
             id: model.id,
@@ -52,6 +54,7 @@ impl GrpcServer {
 
 #[tonic::async_trait]
 impl TickerApi for GrpcServer {
+    /// retrieves and returns a ticker entity from the database, given its id
     async fn get(&self, req: Request<TickerId>) -> Result<Response<Ticker>, Status> {
         let start = Instant::now();
         let mkt = req.into_inner();
@@ -73,6 +76,7 @@ impl TickerApi for GrpcServer {
         response
     }
 
+    /// retrieves and returns all ticker entities from the database
     async fn get_all(&self, _: Request<Empty>) -> Result<Response<Tickers>, Status> {
         let start = Instant::now();
         let result = self.svc.get_all().await;
@@ -89,6 +93,7 @@ impl TickerApi for GrpcServer {
         response
     }
 
+    /// creates a new ticker entity in the database
     async fn create(&self, market: Request<Ticker>) -> Result<Response<Ticker>, Status> {
         let start = Instant::now();
         let mkt = market.into_inner().into_model();

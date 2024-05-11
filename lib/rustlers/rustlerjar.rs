@@ -80,6 +80,7 @@ impl RustlerJar {
         self.rustlers.get(key)
     }
 
+    /// get the mutable Rustler for the given market as a mutable reference
     pub fn get_mut(&mut self, market: &market::Model) -> Option<&mut Arc<Mutex<Box<dyn Rustler>>>> {
         let key = self.get_key(market).to_owned();
         self.rustlers.get_mut(&key)
