@@ -32,7 +32,7 @@ impl Ticker {
     }
 }
 
-/// 🤠 » grpc Server to manage ticker entities
+/// 🐎 » grpc Server to manage ticker entities
 pub struct GrpcServer {
     pub(crate) svc: ticker::Service,
 }
@@ -44,7 +44,7 @@ impl GrpcServer {
         }
     }
 
-    /// 🤠 » creates the ticker api server
+    /// 🐎 » creates the ticker api server
     pub fn svc(self) -> TickerApiServer<GrpcServer> {
         TickerApiServer::new(self)
     }

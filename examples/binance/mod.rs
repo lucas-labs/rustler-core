@@ -14,9 +14,17 @@ rustler!(
     pub struct FooRustler {}
 );
 
+#[allow(dead_code)]
 impl FooRustler {
     pub fn create() -> impl Rustler {
         Self::default()
+    }
+
+    pub fn create_with_external_stuff(name: String) -> impl Fn() -> FooRustler {
+        move || {
+            println!("Creating a new FooRustler using external name = {}", name);
+            Self::default()
+        }
     }
 }
 

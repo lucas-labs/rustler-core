@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     let mut rustler = RustlersSvc::new(
         conn.clone(),
         rustlerjar! {
-            "BINANCE" => FooRustler
+            "BINANCE" => FooRustler::create
         },
     )
     .await;

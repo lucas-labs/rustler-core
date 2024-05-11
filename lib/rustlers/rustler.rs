@@ -2,11 +2,16 @@ pub extern crate chrono;
 pub extern crate eyre;
 
 use {
+    super::bus::{RedisMessage, ToFromRedisMessage, ToRedisKey, ToRedisVal},
     crate::entities::{market, ticker},
     async_trait::async_trait,
     chrono::{DateTime, Local},
     eyre::Result,
-    std::collections::HashMap,
+    lool::s,
+    std::{
+        collections::HashMap,
+        fmt::{self, Display, Formatter},
+    },
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
@@ -20,10 +25,28 @@ pub enum RustlerStatus {
 
 #[derive(Debug, Clone)]
 pub enum MarketHourType {
-    Pre,
-    Regular,
-    Post,
-    Extended,
+    Pre = 0,
+    Regular = 1,
+    Post = 2,
+    Extended = 3,
+}
+
+impl From<MarketHourType> for u8 {
+    fn from(market_hour_type: MarketHourType) -> Self {
+        market_hour_type as u8
+    }
+}
+
+impl From<u8> for MarketHourType {
+    fn from(market_hour_type: u8) -> Self {
+        match market_hour_type {
+            0 => MarketHourType::Pre,
+            1 => MarketHourType::Regular,
+            2 => MarketHourType::Post,
+            3 => MarketHourType::Extended,
+            _ => MarketHourType::Regular,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -31,10 +54,104 @@ pub struct Quote {
     pub id: String,
     pub market: String,
     pub price: f64,
-    pub change_percent: Option<f64>,
-    pub time: Option<i64>,
-    pub market_hours: Option<MarketHourType>,
+    pub change_percent: f64,
+    pub time: i64,
+    pub market_hours: MarketHourType,
 }
+
+impl Quote {
+    pub fn belongs_to(&self, ticker: &Ticker) -> bool {
+        self.id == ticker.symbol && self.market == ticker.market
+    }
+}
+
+impl Display for Quote {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
+}
+
+impl ToRedisVal for Quote {
+    fn to_redis_val(&self) -> Vec<(String, String)> {
+        let market_hours_u8: u8 = self.market_hours.clone().into();
+
+        vec![
+            (s!("id"), self.id.to_owned()),
+            (s!("market"), self.market.to_owned()),
+            (s!("price"), self.price.to_string()),
+            (s!("market_hours"), market_hours_u8.to_string()),
+            (s!("time"), self.time.to_string()),
+            (s!("change_percent"), self.change_percent.to_string()),
+        ]
+    }
+}
+
+impl ToRedisKey for Quote {
+    fn to_redis_key(&self) -> String {
+        format!("quote:{}:{}", self.market, self.id)
+    }
+}
+
+impl ToFromRedisMessage for Quote {
+    fn as_message(&self) -> String {
+        // id¦market¦price¦change_percent¦time¦market_hours
+        format!(
+            "{}¦{}¦{}¦{}¦{}¦{}",
+            self.id,
+            self.market,
+            self.price,
+            self.change_percent,
+            self.time,
+            Into::<u8>::into(self.market_hours.clone())
+        )
+    }
+
+    /// 🐎 » creates a `Quote` from a message
+    ///
+    /// the message should be in the format `id¦market¦price¦change_percent¦time¦market_hours`
+    ///
+    /// **panics** if the message is not in the correct format
+    fn from_message<T: AsRef<str>>(msg: T) -> Self {
+        let msg = msg.as_ref();
+        let parts: Vec<&str> = msg.split('¦').collect();
+
+        let id = parts[0].to_string();
+        let market = parts[1].to_string();
+        let price = parts[2].parse::<f64>().unwrap();
+        let change_percent = parts[3].parse::<f64>().unwrap();
+        let time = parts[4].parse::<i64>().unwrap();
+        let market_hours = parts[5].parse::<u8>().unwrap().into();
+
+        Self {
+            id,
+            market,
+            price,
+            change_percent,
+            time,
+            market_hours,
+        }
+    }
+}
+
+impl PartialEq<Ticker> for Quote {
+    fn eq(&self, other: &Ticker) -> bool {
+        self.id == other.symbol && self.market == other.market
+    }
+}
+
+impl PartialEq<Quote> for Ticker {
+    fn eq(&self, other: &Quote) -> bool {
+        self.symbol == other.id && self.market == other.market
+    }
+}
+
+impl PartialEq<Quote> for Quote {
+    fn eq(&self, other: &Quote) -> bool {
+        self.id == other.id && self.market == other.market
+    }
+}
+
+impl RedisMessage for Quote {}
 
 #[derive(Debug, Clone)]
 pub struct RustlerOpts {
@@ -58,7 +175,7 @@ pub struct ScrapperCallbacks {
     pub on_message: Option<fn(message: Quote) -> Result<()>>,
 }
 
-/// 🤠 » a scruct representing a ticker
+/// 🐎 » a scruct representing a ticker
 ///
 /// in `rustler` a ticker is the union between a symbol (stock identifier) and its market
 ///
@@ -83,7 +200,7 @@ impl Ticker {
         tickers.iter().map(|t| Self::from(t, market)).collect()
     }
 
-    /// 🤠 » returns the key of the ticker
+    /// 🐎 » returns the key of the ticker
     pub fn key(&self) -> String {
         format!("{}:{}", self.market, self.symbol)
     }
@@ -130,17 +247,17 @@ pub trait RustlerAccessor {
 #[async_trait]
 pub trait Rustler: RustlerAccessor + Send + Sync {
     // #region Unimplemented trait functions
-    /// 🤠 » fn called after tickers are added to the rustler
+    /// 🐎 » fn called after tickers are added to the rustler
     fn on_add(&mut self, tickers: &[Ticker]) -> Result<()>;
-    /// 🤠 » fn called after tickers are deleted from the rustler
+    /// 🐎 » fn called after tickers are deleted from the rustler
     fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()>;
-    /// 🤠 » connects the rustler to the data source
+    /// 🐎 » connects the rustler to the data source
     async fn connect(&mut self) -> Result<()>;
-    /// 🤠 » disconnects the rustler from the data source
+    /// 🐎 » disconnects the rustler from the data source
     async fn disconnect(&mut self) -> Result<()>;
     // #endregion
 
-    /// 🤠 » starts the rustler
+    /// 🐎 » starts the rustler
     async fn start(&mut self) -> Result<()> {
         let opts = self.opts();
         if opts.connect_on_start {
@@ -149,7 +266,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
         Ok(())
     }
 
-    /// 🤠 » updates last stop and last run times and calls the appropriate callback
+    /// 🐎 » updates last stop and last run times and calls the appropriate callback
     ///
     /// should be called after the status of the rustler changes
     fn handle_status_change(&mut self) -> Result<()> {
@@ -340,7 +457,7 @@ macro_rules! rustler_accessors {
     };
 }
 
-/// **🤠 » rustler builder macro**
+/// **🐎 » rustler builder macro**
 ///
 /// The `rustler!` macro is used to define a new `Rustler` struct, expanding the struct definition
 /// with the required fields and derives, and implementing the `RustlerAccessor` trait for the

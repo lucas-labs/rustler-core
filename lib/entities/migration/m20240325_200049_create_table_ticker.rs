@@ -1,7 +1,7 @@
 use sea_orm_migration::{async_trait::async_trait, prelude::*};
 
 #[derive(DeriveMigrationName)]
-/// 🤠 » create table `ticker`
+/// 🐎 » create table `ticker`
 pub struct Migration;
 
 #[async_trait]

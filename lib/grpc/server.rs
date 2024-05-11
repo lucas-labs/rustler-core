@@ -12,7 +12,7 @@ use {
 
 const RUSTLER_GRPC_API_ADDR: &str = "RUSTLER_GRPC_API_ADDR";
 
-/// 🤠 » starts the rustler gRPC server
+/// 🐎 » starts the rustler gRPC server
 pub async fn start(conn: DatabaseConnection) -> Result<()> {
     fn get_default_addr() -> String {
         let addr = "0.0.0.0:50051";

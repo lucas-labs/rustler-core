@@ -5,7 +5,7 @@ use {
     tokio::sync::Mutex,
 };
 
-/// **🤠 » rustlerjar! macro**
+/// **🐎 » rustlerjar! macro**
 ///
 /// A macro to create a `RustlerJar` with multiple Rustler instances and their corresponding
 /// mappings.
@@ -14,20 +14,20 @@ use {
 ///
 /// ```rust
 /// let rustler_jar = rustlerjar! {
-///    "NYSE", "NASDAQ" => FooRustler,
-///    "BINANCE" => BarRustler,
+///    "NYSE", "NASDAQ" => FooRustler::create,
+///    "BINANCE" => BarRustler::create(url),
 /// };
 /// ```
 #[macro_export]
 macro_rules! rustlerjar {
-    ($($($name:expr),* => $rustler:ident),* $(,)?) => {{
+    ($($($name:expr),* => $rustler:expr),* $(,)?) => {{
         use $crate::rustlers::RustlerAccessor;
 
         let mut instances: Vec<Box<dyn $crate::rustlers::Rustler>> = Vec::new();
         let mut mappings = std::collections::HashMap::new();
 
         $(
-            let instance = Box::new($rustler::create());
+            let instance = Box::new($rustler());
             $(
                 mappings.insert($name.to_string(), instance.name());
             )*
@@ -38,7 +38,7 @@ macro_rules! rustlerjar {
     }};
 }
 
-/// **🤠 » RustlerJar**
+/// **🐎 » RustlerJar**
 ///
 /// A `RustlerJar` is a collection of Rustlers and their corresponding mappings to the markets.
 /// Which indicates which Rustler should be used for a given market. Rustlers are stored as
@@ -50,8 +50,8 @@ macro_rules! rustlerjar {
 /// The easiest way to create a `RustlerJar` is by using the `rustlerjar!` macro.
 /// ```rust
 /// let rustler_jar = rustlerjar! {
-///   "NYSE", "NASDAQ" => FooRustler,
-///   "BINANCE" => BarRustler,
+///   "NYSE", "NASDAQ" => FooRustler::create,
+///   "BINANCE" => BarRustler::create(url),
 /// };
 ///
 /// let rustler = rustler_jar.get(&market);

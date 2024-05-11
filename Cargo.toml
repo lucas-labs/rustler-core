@@ -2,7 +2,7 @@
 name = "rustler-core"
 version = "0.0.1"
 edition = "2021"
-description = "🤠 » rustler-core market data extractor core functionality"
+description = "🐎 » rustler-core market data extractor core functionality"
 authors = ["Lucas Colombo <lucas@lucode.ar>"]
 build = "lib/build.rs"
 
@@ -23,7 +23,7 @@ async-trait = "0.1.79"
 # grpc & websocket
 tokio-tungstenite = { version = "0.21.0" }
 tonic = "0.11.0"
-prost = "0.12.3" # protocol buffers
+prost = "0.12.3"                           # protocol buffers
 
 # database
 sea-orm = { version = "0.12.15", features = [
@@ -35,6 +35,9 @@ sea-orm-migration = { version = "0.12.15", features = [
     "runtime-tokio-native-tls",
     "sqlx-sqlite",
 ] }
+redis = { version = "0.25.3", features = ["tokio-comp"] }
+futures = "0.3.30"
+rxrust = "1.0.0-beta.7"
 
 [dependencies.lool]
 version = "^0.2.0" # crates: disable-check

@@ -33,7 +33,7 @@ use {
 // stopJob?: Job,
 // }
 
-/// **🤠 » Rustlers Service**
+/// **🐎 » Rustlers Service**
 ///
 /// The `RustlersSvc` is a service that manages the rustlers and orchestrates their executions.
 pub struct RustlersSvc {
@@ -43,7 +43,7 @@ pub struct RustlersSvc {
 }
 
 impl RustlersSvc {
-    /// **🤠 » create service**
+    /// **🐎 » create service**
     ///
     /// creates a new instance of the `RustlersSvc`
     ///
@@ -64,7 +64,7 @@ impl RustlersSvc {
         }
     }
 
-    /// **🤠 » start rustlers**
+    /// **🐎 » start rustlers**
     ///
     /// gets market data from the the database and starts
     /// the corresponding rustler for each market
@@ -79,7 +79,7 @@ impl RustlersSvc {
         Ok(())
     }
 
-    /// **🤠 » restart rustlers**
+    /// **🐎 » restart rustlers**
     ///
     /// stops all rustlers and then starts them again
     pub async fn restart(&self) -> Result<()> {

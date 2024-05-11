@@ -7,7 +7,7 @@ use {
     sea_orm::{ColumnTrait, DatabaseConnection, DbErr, EntityTrait, IntoActiveModel, QueryFilter},
 };
 
-/// 🤠 » service for the `Ticker` entity
+/// 🐎 » service for the `Ticker` entity
 pub struct Service {
     conn: DatabaseConnection,
 }

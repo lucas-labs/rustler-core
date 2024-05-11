@@ -3,48 +3,47 @@
 version: '3'
 
 tasks:
-  db:up:
-    desc: 🗃️ run database migrations (up)
-    cmds:
-      - sea migrate up
-  
-  db:down:
-    desc: 🗃️ run database migrations (down)
-    cmds:
-      - sea migrate down
+    db:up:
+        desc: 🗃️ run database migrations (up)
+        cmds:
+            - sea migrate up
 
-  run:watch:
-    desc: 🚀 watch rustler
-    cmds:
-      - cargo watch -c -x "run --example=rustler"
+    db:down:
+        desc: 🗃️ run database migrations (down)
+        cmds:
+            - sea migrate down
 
-  build:watch:
-    desc: 🚀 watch rustler «build»
-    cmds:
-      - cargo watch -c -x "build"
+    run:watch:
+        desc: 🚀 watch rustler
+        cmds:
+            - cargo watch -c -x "run --example=rustler"
 
-  build:
-    desc: ⚡ build rustler «release»
-    cmds:
-      - cargo build --release
-      - python check_size.py
+    build:watch:
+        desc: 🚀 watch rustler «build»
+        cmds:
+            - cargo watch -c -x "build"
 
-  fmt:
-    desc: 🎨 format rustler
-    cmds:
-      - cargo +nightly fmt --all
+    build:
+        desc: ⚡ build rustler «release»
+        cmds:
+            - cargo build --release
 
-  test:
-    desc: 🧪 test lool
-    cmds:
-      - cargo nextest run --all-features --workspace
+    fmt:
+        desc: 🎨 format rustler
+        cmds:
+            - cargo +nightly fmt --all
 
-  lint:
-    desc: 🧶 lint rustler
-    cmds:
-      - cargo clippy --fix --workspace --allow-staged
+    test:
+        desc: 🧪 test lool
+        cmds:
+            - cargo nextest run --all-features --workspace
 
-  publish:
-    desc: 🚀 publish lool
-    cmds:
-      - cargo publish --registry lugit-sa
+    lint:
+        desc: 🧶 lint rustler
+        cmds:
+            - cargo clippy --fix --workspace --allow-staged
+
+    publish:
+        desc: 🚀 publish lool
+        cmds:
+            - cargo publish --registry lugit-sa

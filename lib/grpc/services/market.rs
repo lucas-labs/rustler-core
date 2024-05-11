@@ -47,7 +47,7 @@ impl Market {
     }
 }
 
-/// 🤠 » grpc Server to manage market entities
+/// 🐎 » grpc Server to manage market entities
 pub struct GrpcServer {
     pub(crate) svc: market::Service,
 }
@@ -59,7 +59,7 @@ impl GrpcServer {
         }
     }
 
-    /// 🤠 » creates the market api server
+    /// 🐎 » creates the market api server
     pub fn svc(self) -> MarketApiServer<GrpcServer> {
         MarketApiServer::new(self)
     }
