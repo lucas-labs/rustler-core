@@ -34,5 +34,7 @@
         "rustler.db-wal": true,
         "rustler.db.bkp": true
     },
-    "editor.formatOnSave": true
+    "[rust]": {
+        "editor.formatOnSave": true
+    }
 }
