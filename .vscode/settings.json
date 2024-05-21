@@ -19,7 +19,7 @@
         "target": true,
 
         // 📝 readmes
-        // "**/**/README.md": true,
+        "**/**/README.md": true,
 
         // 🗑️
         "check_size.py": true,
