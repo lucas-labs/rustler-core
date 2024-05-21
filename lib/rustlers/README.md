@@ -1,4 +1,4 @@
-<h1 align="center"><img src="../../.github/img/doc-title-rustler.svg" height="264"></h1>
+<p align="center"><img src="../../.github/img/doc-title-rustler.svg" height="264"></p>
 
 <br>
 <br>
