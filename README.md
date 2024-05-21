@@ -1,4 +1,4 @@
-<p align="center"><img src=".github/img/rustler-core-logo.svg" height="264"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/lucas-labs/rustler-core/master/.github/img/rustler-core-logo.svg" height="264"></p>
 
 <br>
 <br>
@@ -32,7 +32,7 @@ Apart from the above, this library also defines:
 -   a [database schema](./lib/entities/orm/) for storing market hours, which is used by the `RustlersSvc` to schedule the `rustlers`.
 -   initial [database migrations](./lib/entities/migration) to create the schema.
 -   a [grpc server](./lib/grpc/) to interact with the rustlers database.
--   <img alt="unimplemented" src="./.github/img/todo.svg" height="12"> a [websocket gateway server](./lib/socket/) to stream stock pricing data to subscribed clients
+-   <img alt="unimplemented" src="https://raw.githubusercontent.com/lucas-labs/rustler-core/master/.github/img/todo.svg" height="12"> a [websocket gateway server](./lib/socket/) to stream stock pricing data to subscribed clients
 
 > [!NOTE]
 >
@@ -48,7 +48,7 @@ Apart from the above, this library also defines:
 The following diagram shows the core components of the `rustler-core` library and how they interact
 with each other.
 
-<p align="center"><img src=".github/img/diagram.svg"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/lucas-labs/rustler-core/master/.github/img/diagram.svg"></p>
 
 ## Example
 
