@@ -3,13 +3,16 @@ mod binance;
 use {
     eyre::{set_hook, DefaultHandler, Result},
     lool::s,
-    rustler_core::rustlers::{bus, MarketHourType, Quote},
+    rustler_core::rustlers::{
+        bus::{self, PublisherTrait},
+        MarketHourType, Quote,
+    },
 };
 
 #[tokio::main]
 async fn main() -> Result<()> {
     set_hook(Box::new(DefaultHandler::default_with))?;
-    let mut px = bus::publisher(&"redis://127.0.0.1/").await?;
+    let mut px = bus::redis::publisher(&"redis://127.0.0.1/").await?;
     let variations = vec![-4.3, -1.1, 2.0, -0.5, 1.5, -1.3, 0.7, 0.3, -0.1, 3.4];
 
     let vars = variations.clone();

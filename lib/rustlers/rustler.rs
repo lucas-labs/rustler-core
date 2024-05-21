@@ -2,7 +2,10 @@ pub extern crate chrono;
 pub extern crate eyre;
 
 use {
-    super::bus::{RedisMessage, ToFromRedisMessage, ToRedisKey, ToRedisVal},
+    super::{
+        bus::{BusMessage, ToBusKey, ToBusVal, ToFromBusMessage},
+        svc::RustlerMsg,
+    },
     crate::entities::{market, ticker},
     async_trait::async_trait,
     chrono::{DateTime, Local},
@@ -12,6 +15,7 @@ use {
         collections::HashMap,
         fmt::{self, Display, Formatter},
     },
+    tokio::sync::mpsc::Sender,
 };
 
 /// 🐎 » a struct representing the status of a rustler at a given time
@@ -75,8 +79,8 @@ impl Display for Quote {
     }
 }
 
-impl ToRedisVal for Quote {
-    fn to_redis_val(&self) -> Vec<(String, String)> {
+impl ToBusVal for Quote {
+    fn to_bus_val(&self) -> Vec<(String, String)> {
         let market_hours_u8: u8 = self.market_hours.clone().into();
 
         vec![
@@ -90,13 +94,13 @@ impl ToRedisVal for Quote {
     }
 }
 
-impl ToRedisKey for Quote {
-    fn to_redis_key(&self) -> String {
+impl ToBusKey for Quote {
+    fn to_bus_key(&self) -> String {
         format!("quote:{}:{}", self.market, self.id)
     }
 }
 
-impl ToFromRedisMessage for Quote {
+impl ToFromBusMessage for Quote {
     /// 🐎 » converts a `Quote` to a serialized message that can be sent over a redis channel
     ///
     /// the message is in the format `id¦market¦price¦change_percent¦time¦market_hours`
@@ -158,7 +162,7 @@ impl PartialEq<Quote> for Quote {
     }
 }
 
-impl RedisMessage for Quote {}
+impl BusMessage for Quote {}
 
 #[derive(Debug, Clone)]
 pub struct RustlerOpts {
@@ -173,13 +177,6 @@ impl Default for RustlerOpts {
             connect_on_add: true,
         }
     }
-}
-
-#[derive(Debug, Clone, Default)]
-pub struct ScrapperCallbacks {
-    pub on_connected: Option<fn() -> Result<()>>,
-    pub on_disconnected: Option<fn() -> Result<()>>,
-    pub on_message: Option<fn(message: Quote) -> Result<()>>,
 }
 
 /// 🐎 » a scruct representing a ticker
@@ -246,8 +243,9 @@ pub trait RustlerAccessor {
     fn tickers_mut(&mut self) -> &mut HashMap<String, Ticker>;
     fn set_tickers(&mut self, tickers: HashMap<String, Ticker>);
 
-    fn callbacks(&self) -> &Option<ScrapperCallbacks>;
-    fn set_callbacks(&mut self, callbacks: Option<ScrapperCallbacks>);
+    fn msg_sender(&self) -> &Option<Sender<RustlerMsg>>;
+    fn msg_sender_mut(&mut self) -> &mut Option<Sender<RustlerMsg>>;
+    fn set_msg_sender(&mut self, sender: Option<Sender<RustlerMsg>>);
     // #endregion
 }
 
@@ -281,20 +279,20 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
             RustlerStatus::Disconnected => {
                 self.set_last_stop(Some(Local::now()));
 
-                if let Some(callbacks) = self.callbacks() {
-                    if let Some(on_disconnected) = callbacks.on_disconnected {
-                        on_disconnected()?;
-                    }
-                }
+                // if let Some(callbacks) = self.callbacks() {
+                //     if let Some(on_disconnected) = callbacks.on_disconnected {
+                //         on_disconnected()?;
+                //     }
+                // }
             }
             RustlerStatus::Connected => {
                 self.set_last_run(Some(Local::now()));
 
-                if let Some(callbacks) = self.callbacks() {
-                    if let Some(on_connected) = callbacks.on_connected {
-                        on_connected()?;
-                    }
-                }
+                // if let Some(callbacks) = self.callbacks() {
+                //     if let Some(on_connected) = callbacks.on_connected {
+                //         on_connected()?;
+                //     }
+                // }
             }
             _ => {}
         };
@@ -341,17 +339,6 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
         }
 
         self.on_delete(new_tickers)?;
-        Ok(())
-    }
-
-    /// registers a new quote by passing it to the on_message callback
-    fn register_quote(&self, quote: Quote) -> Result<()> {
-        if let Some(callbacks) = self.callbacks() {
-            if let Some(on_message) = callbacks.on_message {
-                on_message(quote)?;
-            }
-        }
-
         Ok(())
     }
 }
@@ -458,11 +445,21 @@ macro_rules! rustler_accessors {
         fn set_tickers(&mut self, tickers: HashMap<String, $crate::rustlers::Ticker>) {
             self.tickers = tickers;
         }
-        fn callbacks(&self) -> &Option<$crate::rustlers::ScrapperCallbacks> {
-            &self.callbacks
+        fn msg_sender(
+            &self,
+        ) -> &Option<tokio::sync::mpsc::Sender<$crate::rustlers::svc::RustlerMsg>> {
+            &self.msg_sender
         }
-        fn set_callbacks(&mut self, callbacks: Option<$crate::rustlers::ScrapperCallbacks>) {
-            self.callbacks = callbacks;
+        fn msg_sender_mut(
+            &mut self,
+        ) -> &mut Option<tokio::sync::mpsc::Sender<$crate::rustlers::svc::RustlerMsg>> {
+            &mut self.msg_sender
+        }
+        fn set_msg_sender(
+            &mut self,
+            sender: Option<tokio::sync::mpsc::Sender<$crate::rustlers::svc::RustlerMsg>>,
+        ) {
+            self.msg_sender = sender;
         }
     };
 }
@@ -491,7 +488,7 @@ macro_rules! rustler {
             last_update: Option<$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>>,
             opts: $crate::rustlers::RustlerOpts,
             tickers: HashMap<String, $crate::rustlers::Ticker>,
-            callbacks: Option<$crate::rustlers::ScrapperCallbacks>,
+            msg_sender: Option<tokio::sync::mpsc::Sender<$crate::rustlers::svc::RustlerMsg>>,
             $($fields)*
         }
 

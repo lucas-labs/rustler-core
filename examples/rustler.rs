@@ -5,7 +5,11 @@ use {
     dotenvy::dotenv,
     eyre::{set_hook, DefaultHandler, Result},
     lool::logger::{info, ConsoleLogger, Level},
-    rustler_core::{entities::db::get_connection, grpc, rustlerjar, rustlers::svc::RustlersSvc},
+    rustler_core::{
+        entities::db::get_connection,
+        grpc, rustlerjar,
+        rustlers::{bus, svc::RustlersSvc, Quote},
+    },
     tokio::join,
 };
 
@@ -15,12 +19,15 @@ async fn main() -> Result<()> {
     ConsoleLogger::default_setup(Level::Trace, "rustler")?;
 
     dotenv()?;
+    let publisher = bus::redis::publisher::<Quote, _>(&"redis://127.0.0.1/").await?;
+
     let conn = get_connection().await?;
     let mut rustler = RustlersSvc::new(
         conn.clone(),
         rustlerjar! {
             "BINANCE" => FooRustler::create
         },
+        publisher,
     )
     .await;
 

@@ -1,12 +1,16 @@
 use {
     async_trait::async_trait,
-    eyre::Result,
-    lool::logger::info,
+    eyre::{OptionExt, Result},
+    lool::{
+        logger::{debug, error, info},
+        s,
+    },
     rustler_core::{
         rustler,
-        rustlers::{Rustler, RustlerAccessor, RustlerStatus, Ticker},
+        rustlers::{svc::quote, MarketHourType, Rustler, RustlerAccessor, RustlerStatus, Ticker},
     },
     std::collections::HashMap,
+    tokio::select,
 };
 
 rustler!(
@@ -26,6 +30,41 @@ impl FooRustler {
             Self::default()
         }
     }
+
+    async fn start_rustling(&mut self) -> Result<()> {
+        let sender = self.msg_sender().as_ref().ok_or_eyre("Sender not found")?.clone();
+
+        tokio::spawn(async move {
+            debug!("Starting rustling");
+            select! {
+                _ = async move {
+                    loop {
+                        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+
+                        let result = sender
+                            .send(quote(
+                                s!("BTCUSDT"),
+                                s!("BINANCE"),
+                                50000.0,
+                                0.0,
+                                198798798798,
+                                MarketHourType::Regular,
+                            ))
+                            .await;
+
+                        if let Err(e) = result {
+                            error!("Failed to send message: {}", e);
+                        }
+                    }
+                } => {
+                    error!("Rustling stopped");
+                },
+
+            }
+        });
+
+        Ok(())
+    }
 }
 
 #[async_trait]
@@ -37,7 +76,9 @@ impl Rustler for FooRustler {
 
         self.set_status(RustlerStatus::Connecting)?;
 
-        info!("Connecting to data source");
+        info!("(mock) Connecting to data source");
+        self.start_rustling().await?;
+        info!("(mock) Connected to data source");
 
         self.set_status(RustlerStatus::Connected)?;
 
@@ -51,23 +92,20 @@ impl Rustler for FooRustler {
         }
 
         self.set_status(RustlerStatus::Disconnecting)?;
-
-        info!("Disconnecting from data source");
-
+        info!("(mock) Disconnecting from data source");
         self.set_status(RustlerStatus::Disconnected)?;
+        info!("(mock) Disconnected from data source");
 
         Ok(())
     }
 
     fn on_add(&mut self, tickers: &[Ticker]) -> Result<()> {
-        info!("Adding tickers: {:?}", tickers);
-
+        info!("(mock) Adding tickers: {:?}", tickers);
         Ok(())
     }
 
     fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()> {
-        info!("Deleting tickers: {:?}", tickers);
-
+        info!("(mock) Deleting tickers: {:?}", tickers);
         Ok(())
     }
 }

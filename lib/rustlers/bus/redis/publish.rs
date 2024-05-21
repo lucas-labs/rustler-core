@@ -1,20 +1,22 @@
 use {
-    super::{key, PrefixedPubSub, RedisClient, RedisMessage, KEY_PREFIX},
+    super::{key, BusMessage, PrefixedPubSub, RedisClient, KEY_PREFIX},
+    crate::rustlers::bus::PublisherTrait,
     eyre::Result,
     redis::{aio::MultiplexedConnection, AsyncCommands},
+    tonic::async_trait,
 };
 
 /// 🐎 » bus **Publisher**
 ///
 /// allows to push a message or resource to the bus
 #[derive(Clone)]
-pub struct Publisher<RM: RedisMessage> {
+pub struct RedisPublisher<RM: BusMessage> {
     conn: MultiplexedConnection,
     key_prefix: String,
     resource_type: std::marker::PhantomData<RM>,
 }
 
-impl<RM: RedisMessage> PrefixedPubSub for Publisher<RM> {
+impl<RM: BusMessage> PrefixedPubSub for RedisPublisher<RM> {
     fn get_prefix(&self) -> String {
         self.key_prefix.clone()
     }
@@ -25,7 +27,7 @@ impl<RM: RedisMessage> PrefixedPubSub for Publisher<RM> {
     }
 }
 
-impl<RM: RedisMessage> Publisher<RM> {
+impl<RM: BusMessage> RedisPublisher<RM> {
     /// 🐎 » create a new bus publisher
     pub async fn new<RC>(redis: &RC) -> Result<Self>
     where
@@ -40,12 +42,15 @@ impl<RM: RedisMessage> Publisher<RM> {
             resource_type: std::marker::PhantomData,
         })
     }
+}
 
+#[async_trait]
+impl<RM: BusMessage> PublisherTrait<RM> for RedisPublisher<RM> {
     /// 🐎 » publish a message to the bus
-    pub async fn publish(&mut self, value: RM) -> Result<()> {
-        let obj_key = key(self.get_prefix(), value.to_redis_key());
+    async fn publish(&mut self, value: RM) -> Result<()> {
+        let obj_key = key(self.get_prefix(), value.to_bus_key());
         // set hash key
-        self.conn.hset_multiple(&obj_key, value.to_redis_val().as_slice()).await?;
+        self.conn.hset_multiple(&obj_key, value.to_bus_val().as_slice()).await?;
 
         // publish to the appropriate channel
         self.conn.publish(&obj_key, value.as_message()).await?;

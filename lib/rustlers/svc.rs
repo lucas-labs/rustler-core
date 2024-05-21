@@ -2,8 +2,12 @@ use {
     super::{
         rustler::{Rustler, Ticker},
         rustlerjar::RustlerJar,
+        MarketHourType,
     },
-    crate::entities::{market, sea_orm::DatabaseConnection, ticker},
+    crate::{
+        entities::{market, sea_orm::DatabaseConnection, ticker},
+        rustlers::{bus::PublisherTrait, Quote},
+    },
     eyre::Result,
     lool::{
         logger::{info, warn},
@@ -13,36 +17,54 @@ use {
         },
     },
     std::sync::Arc,
-    tokio::sync::Mutex,
+    tokio::{
+        spawn,
+        sync::{mpsc::Sender, Mutex},
+    },
 };
 
-// interface MarketExecData {
-//     entity: MarketModel;
-//     startJob?: Job;
-//     stopJob?: Job;
-// }
+/// **🐎 » Rustler Message**
+pub enum RustlerMsg {
+    QuoteMsg(Quote),
+}
 
-// interface ScrapperData {
-//     markets?: MarketExecData[];
-//     // subscription?: Subscription
-// }]]
-
-// struct MarketExecData {
-// entity: MarketModel,
-// startJob?: Job,
-// stopJob?: Job,
-// }
+/// **🐎 » create a quote message**
+#[inline]
+pub fn quote(
+    id: String,
+    market: String,
+    price: f64,
+    change_percent: f64,
+    time: i64,
+    market_hours: MarketHourType,
+) -> RustlerMsg {
+    RustlerMsg::QuoteMsg(Quote {
+        id,
+        market,
+        price,
+        change_percent,
+        time,
+        market_hours,
+    })
+}
 
 /// **🐎 » Rustlers Service**
 ///
 /// The `RustlersSvc` is a service that manages the rustlers and orchestrates their executions.
-pub struct RustlersSvc {
+pub struct RustlersSvc<P>
+where
+    P: PublisherTrait<Quote> + Send + Sync + 'static + Clone,
+{
     market_svc: market::Service,
     sched: Scheduler,
     rustlers: RustlerJar,
+    publisher: P,
 }
 
-impl RustlersSvc {
+impl<Publisher> RustlersSvc<Publisher>
+where
+    Publisher: PublisherTrait<Quote> + Send + Sync + 'static + Clone,
+{
     /// **🐎 » create service**
     ///
     /// creates a new instance of the `RustlersSvc`
@@ -53,7 +75,7 @@ impl RustlersSvc {
     ///
     /// **Returns**
     /// the created `RustlersSvc` instance
-    pub async fn new(conn: DatabaseConnection, rustlers: RustlerJar) -> Self {
+    pub async fn new(conn: DatabaseConnection, rustlers: RustlerJar, publisher: Publisher) -> Self {
         let market_svc = market::Service::new(conn).await;
         let sched = Scheduler::new();
 
@@ -61,6 +83,7 @@ impl RustlersSvc {
             market_svc,
             rustlers,
             sched,
+            publisher,
         }
     }
 
@@ -72,8 +95,26 @@ impl RustlersSvc {
         info!("Starting rustlers");
         let markets = self.market_svc.get_all_with_tickers().await?;
 
-        for (market, tickers) in markets {
-            self.schedule_rustler_for((market, tickers)).await?;
+        if markets.len() > 0 {
+            let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
+
+            for (market, tickers) in markets {
+                self.schedule_rustler_for((market, tickers), sender.clone()).await?;
+            }
+
+            let mut publisher = self.publisher.clone();
+            spawn(async move {
+                while let Some(msg) = receiver.recv().await {
+                    match msg {
+                        RustlerMsg::QuoteMsg(quote) => publisher.publish(quote).await?,
+                    }
+                }
+
+                info!("Rustler message receiver stopped");
+                Ok::<(), eyre::Report>(())
+            });
+        } else {
+            warn!("No markets found with tickers");
         }
 
         Ok(())
@@ -101,6 +142,7 @@ impl RustlersSvc {
     async fn schedule_rustler_for(
         &mut self,
         market: (market::Model, Vec<ticker::Model>),
+        sender: Sender<RustlerMsg>,
     ) -> Result<()> {
         let (market, tickers) = market;
         let tickers: Vec<Ticker> = tickers.into_iter().map(|t| Ticker::from(&t, &market)).collect();
@@ -109,6 +151,12 @@ impl RustlersSvc {
         let rustler = self.rustlers.get(&market);
 
         if let Some(rustler) = rustler {
+            {
+                let mut rustler = rustler.lock().await;
+                info!("Setting message sender for rustler '{}'", rustler.name());
+                rustler.set_msg_sender(Some(sender))
+            }
+
             if let Some((start, stop)) = rules {
                 let start_name = format!("start-rustler-{}", market.short_name);
                 let end_name = format!("end-rustler-{}", market.short_name);

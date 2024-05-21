@@ -1,4 +1,4 @@
-use {eyre::Result, redis::Client, std::fmt::Debug};
+use {super::BusMessage, eyre::Result, redis::Client};
 
 pub mod publish;
 pub mod subscribe;
@@ -58,28 +58,6 @@ impl RedisClient for String {
     }
 }
 
-/// 🐎 » represents a value that can be serialized to a redis value
-pub trait ToRedisVal {
-    fn to_redis_val(&self) -> Vec<(String, String)>;
-}
-
-/// 🐎 » represents a value that can be serialized to a redis key
-pub trait ToRedisKey {
-    fn to_redis_key(&self) -> String;
-}
-
-/// 🐎 » represents a value that can be serialized to and from a redis message
-pub trait ToFromRedisMessage {
-    fn as_message(&self) -> String;
-    fn from_message<T: AsRef<str>>(msg: T) -> Self;
-}
-
-/// 🐎 » supertrait combining all redis object traits + debug + send + sync + 'static
-pub trait RedisMessage:
-    ToRedisVal + ToRedisKey + ToFromRedisMessage + Debug + Clone + Send + Sync + PartialEq + 'static
-{
-}
-
 /// 🐎 » **publisher**: create bus publisher
 ///
 /// **Arguments**
@@ -87,10 +65,10 @@ pub trait RedisMessage:
 ///
 /// **Returns**
 /// - a new `Publisher` instance
-pub async fn publisher<RM: RedisMessage, RC: RedisClient>(
+pub async fn publisher<RM: BusMessage, RC: RedisClient>(
     redis: &RC,
-) -> Result<publish::Publisher<RM>> {
-    publish::Publisher::new(redis).await
+) -> Result<publish::RedisPublisher<RM>> {
+    publish::RedisPublisher::new(redis).await
 }
 
 /// 🐎 » **subscriber**: create bus subscriber
@@ -100,10 +78,10 @@ pub async fn publisher<RM: RedisMessage, RC: RedisClient>(
 ///
 /// **Returns**
 /// - a new `Subscriber` instance
-pub async fn subscriber<RM: RedisMessage, RC: RedisClient>(
+pub async fn subscriber<RM: BusMessage, RC: RedisClient>(
     redis: &RC,
-) -> Result<subscribe::Subscriber<RM>> {
-    subscribe::Subscriber::new(redis).await
+) -> Result<subscribe::RedisSubscriber<RM>> {
+    subscribe::RedisSubscriber::new(redis).await
 }
 
 /// 🐎 » **pubsub*: create bus publisher and subscriber
@@ -113,11 +91,11 @@ pub async fn subscriber<RM: RedisMessage, RC: RedisClient>(
 ///
 /// **Returns**
 /// - a tuple containing a `Publisher` and a `Subscriber` instance
-pub async fn pubsub<RO: RedisMessage, T: RedisClient>(
+pub async fn pubsub<RO: BusMessage, T: RedisClient>(
     redis: &T,
-) -> Result<(publish::Publisher<RO>, subscribe::Subscriber<RO>)> {
-    let publisher = publish::Publisher::new(redis).await?;
-    let subscriber = subscribe::Subscriber::new(redis).await?;
+) -> Result<(publish::RedisPublisher<RO>, subscribe::RedisSubscriber<RO>)> {
+    let publisher = publish::RedisPublisher::new(redis).await?;
+    let subscriber = subscribe::RedisSubscriber::new(redis).await?;
 
     Ok((publisher, subscriber))
 }

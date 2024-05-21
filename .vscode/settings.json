@@ -4,13 +4,13 @@
         // "migration": true,
         // "entities": true,
 
-        // ⚙️ 
+        // ⚙️
         // ".env": true,
         "Taskfile.yaml": true,
         ".cocorc": true,
         ".task": true,
         ".cargo": true,
-        ".github": true,
+        // ".github": true,
         "rustfmt.toml": true,
         // "**/**/Cargo.toml": true,
 
@@ -32,6 +32,7 @@
         // "rustler.db": true,
         "rustler.db-shm": true,
         "rustler.db-wal": true,
-        "rustler.db.bkp": true,
+        "rustler.db.bkp": true
     }
+    // "editor.formatOnSave": true
 }

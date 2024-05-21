@@ -7,15 +7,26 @@
     "settings": {
         "terminal.integrated.env.windows": {
             // allows to run the command in the terminal for development purposes
-            "PATH": "${workspaceFolder}/target/debug;${env:PATH}",
+            "PATH": "${workspaceFolder}/target/debug;${env:PATH}"
         },
         "lucodear-icons.activeIconPack": "rust_ferris",
         "lucodear-icons.folders.associations": {
-            ".cargo": "rust",
+            ".cargo": "rust"
         },
-        "lucodear-icons.files.associations": {
-        
-        },
+        "lucodear-icons.folders.customClones": [
+            {
+                "name": "redis",
+                "base": "database",
+                "color": "deep-orange-400",
+                "folderNames": ["redis"]
+            },
+            {
+                "name": "bus",
+                "base": "pipe",
+                "color": "blue-500",
+                "folderNames": ["bus"]
+            }
+        ],
         "rust-analyzer.checkOnSave": true
     }
 }
