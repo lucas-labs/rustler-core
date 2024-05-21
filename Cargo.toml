@@ -1,6 +1,6 @@
 [package]
 name = "rustler-core"
-version = "0.0.5"
+version = "0.0.6"
 edition = "2021"
 description = "🐎 » rustler-core market data extractor core functionality"
 authors = ["Lucas Colombo <lucas@lucode.ar>"]
