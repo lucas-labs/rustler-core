@@ -88,4 +88,4 @@ tasks:
         deps:
             - release:pre
         cmds:
-            - cargo release patch
+            - cargo release patch --execute
