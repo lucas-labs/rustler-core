@@ -1,8 +1,6 @@
 use std::{convert::Infallible, fmt::Debug};
 
-use eyre::Result;
-use rxrust::ops::box_it::CloneableBoxOpThreads;
-use tonic::async_trait;
+use {eyre::Result, rxrust::ops::box_it::CloneableBoxOpThreads, tonic::async_trait};
 
 pub mod redis;
 

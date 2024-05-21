@@ -95,7 +95,7 @@ where
         info!("Starting rustlers");
         let markets = self.market_svc.get_all_with_tickers().await?;
 
-        if markets.len() > 0 {
+        if !markets.is_empty() {
             let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
             for (market, tickers) in markets {
