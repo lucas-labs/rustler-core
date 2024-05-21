@@ -303,6 +303,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
     /// adds new tickers to the rustler
     async fn add(&mut self, new_tickers: &Vec<Ticker>) -> Result<()> {
         let tickers = self.tickers_mut();
+        let mut added_tickers = vec![];
 
         for new_ticker in new_tickers {
             // if the ticker already exists in the tickers map, skip it
@@ -311,6 +312,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
             }
 
             tickers.insert(new_ticker.key(), new_ticker.clone());
+            added_tickers.push(new_ticker.clone());
         }
 
         if self.opts().connect_on_add {
@@ -320,16 +322,23 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
             }
         }
 
-        self.on_add(new_tickers)?;
+        if !added_tickers.is_empty() {
+            self.on_add(&added_tickers)?;
+        }
+
         Ok(())
     }
 
     /// deletes tickers from the rustler
     async fn delete(&mut self, new_tickers: &Vec<Ticker>) -> Result<()> {
         let tickers = self.tickers_mut();
+        let mut removed_tickers = vec![];
 
         for new_ticker in new_tickers {
-            tickers.remove(&new_ticker.key());
+            let removed_ticker = tickers.remove(&new_ticker.key());
+            if let Some(removed_ticker) = removed_ticker {
+                removed_tickers.push(removed_ticker);
+            }
         }
 
         // if after deleting the tickers the tickers map is
@@ -338,7 +347,10 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
             self.disconnect().await?;
         }
 
-        self.on_delete(new_tickers)?;
+        if !removed_tickers.is_empty() {
+            self.on_delete(&removed_tickers)?;
+        }
+
         Ok(())
     }
 }
