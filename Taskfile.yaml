@@ -28,22 +28,60 @@ tasks:
         cmds:
             - cargo build --release
 
+    fmt:check:
+        desc: 🎨 check format
+        cmds:
+            - cargo +nightly fmt --all --check
+
     fmt:
         desc: 🎨 format rustler
         cmds:
             - cargo +nightly fmt --all
 
     test:
-        desc: 🧪 test lool
+        desc: 🧪 test rustler-core
         cmds:
             - cargo nextest run --all-features --workspace
+
+    lint:check:
+        desc: 🧶 check linting
+        cmds:
+            - cargo clippy --workspace
 
     lint:
         desc: 🧶 lint rustler
         cmds:
             - cargo clippy --fix --workspace --allow-staged
 
-    publish:
-        desc: 🚀 publish lool
+    release:pre:
+        desc: 🚀 prerelease rustler-core
+        deps:
+            - fmt:check
+            - lint:check
+
+    release:patch:
+        desc: 🚀 release «patch» version of rustler-core
+        deps:
+            - release:pre
         cmds:
-            - cargo publish --registry lugit-sa
+            - cargo release patch --execute
+    
+    release:minor:
+        desc: 🚀 release «minor» version of rustler-core
+        deps:
+            - release:pre
+        cmds:
+            - cargo release minor --execute
+
+    release:major:
+        desc: 🚀 release «major» version of rustler-core
+        deps:
+            - release:pre
+        cmds:
+            - cargo release major --execute
+
+
+    release:
+        desc: 🚀 release «patch» version of rustler-core
+        deps:
+            - release:patch
