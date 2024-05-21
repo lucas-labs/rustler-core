@@ -82,6 +82,10 @@ tasks:
 
 
     release:
+        aliases:
+          - "publish"
         desc: 🚀 release «patch» version of rustler-core
         deps:
-            - release:patch
+            - release:pre
+        cmds:
+            - cargo release patch
