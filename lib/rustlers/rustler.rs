@@ -2,11 +2,11 @@ pub extern crate chrono;
 pub extern crate eyre;
 
 use {
-    super::{
+    super::svc::RustlerMsg,
+    crate::{
         bus::{BusMessage, ToBusKey, ToBusVal, ToFromBusMessage},
-        svc::RustlerMsg,
+        entities::{market, ticker},
     },
-    crate::entities::{market, ticker},
     async_trait::async_trait,
     chrono::{DateTime, Local},
     eyre::Result,

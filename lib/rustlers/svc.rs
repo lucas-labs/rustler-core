@@ -5,8 +5,9 @@ use {
         MarketHourType,
     },
     crate::{
+        bus::PublisherTrait,
         entities::{market, sea_orm::DatabaseConnection, ticker},
-        rustlers::{bus::PublisherTrait, Quote},
+        rustlers::Quote,
     },
     eyre::Result,
     lool::{

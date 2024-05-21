@@ -1,8 +1,8 @@
 use {
     eyre::{set_hook, DefaultHandler, Result},
-    rustler_core::rustlers::{
+    rustler_core::{
         bus::{self, SubscriberTrait},
-        Quote, Ticker,
+        rustlers::{Quote, Ticker},
     },
     rxrust::observable::{ObservableExt, ObservableItem},
 };

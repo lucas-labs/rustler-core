@@ -6,9 +6,10 @@ use {
     eyre::{set_hook, DefaultHandler, Result},
     lool::logger::{info, ConsoleLogger, Level},
     rustler_core::{
+        bus,
         entities::db::get_connection,
         grpc, rustlerjar,
-        rustlers::{bus, svc::RustlersSvc, Quote},
+        rustlers::{svc::RustlersSvc, Quote},
     },
     tokio::join,
 };

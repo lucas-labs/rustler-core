@@ -3,9 +3,9 @@ mod binance;
 use {
     eyre::{set_hook, DefaultHandler, Result},
     lool::s,
-    rustler_core::rustlers::{
+    rustler_core::{
         bus::{self, PublisherTrait},
-        MarketHourType, Quote,
+        rustlers::{MarketHourType, Quote},
     },
 };
 

@@ -1,6 +1,6 @@
 use {
     super::{key, BusMessage, PrefixedPubSub, RedisClient, KEY_PREFIX},
-    crate::rustlers::bus::PublisherTrait,
+    crate::bus::PublisherTrait,
     eyre::Result,
     redis::{aio::MultiplexedConnection, AsyncCommands},
     tonic::async_trait,

@@ -1,6 +1,6 @@
 use {
     super::{key, PrefixedPubSub, RedisClient, KEY_PREFIX},
-    crate::rustlers::bus::{BusMessage, SubscriberTrait},
+    crate::bus::{BusMessage, SubscriberTrait},
     eyre::Result,
     futures::StreamExt,
     lool::{fail, s},

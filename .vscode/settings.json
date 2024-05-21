@@ -33,6 +33,6 @@
         "rustler.db-shm": true,
         "rustler.db-wal": true,
         "rustler.db.bkp": true
-    }
-    // "editor.formatOnSave": true
+    },
+    "editor.formatOnSave": true
 }

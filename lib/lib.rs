@@ -1,3 +1,4 @@
+pub mod bus;
 pub mod entities;
 pub mod grpc;
 pub mod rustlers;
