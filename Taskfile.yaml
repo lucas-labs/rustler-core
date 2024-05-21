@@ -64,21 +64,21 @@ tasks:
         deps:
             - release:pre
         cmds:
-            - cargo release patch --execute
+            - cargo release patch --execute --no-confirm
     
     release:minor:
         desc: 🚀 release «minor» version of rustler-core
         deps:
             - release:pre
         cmds:
-            - cargo release minor --execute
+            - cargo release minor --execute --no-confirm
 
     release:major:
         desc: 🚀 release «major» version of rustler-core
         deps:
             - release:pre
         cmds:
-            - cargo release major --execute
+            - cargo release major --execute --no-confirm
 
 
     release:
