@@ -22,8 +22,10 @@ Also, this library is built using the `Rust` programming language... so, **_rust
 
 This library defines the core functionality for a `rustler`. It includes the following:
 
--   A [`Rustler`](./lib/rustlers/rustlers.rs) trait that defines the core functionality for a `rustler`.
+-   A [`Rustler`](./lib/rustlers/rustler.rs) trait that defines the core functionality for a `rustler`.
 -   A [`RustlersSvc`](./lib/rustlers/svc.rs) which orchestrates the `rustlers` at runtime, scheduling them to scrape stock pricing data between market hours.
+
+More info [here](./lib/rustlers/README.md).
 
 Apart from the above, this library also defines:
 
