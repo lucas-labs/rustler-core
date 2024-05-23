@@ -253,9 +253,9 @@ pub trait RustlerAccessor {
 pub trait Rustler: RustlerAccessor + Send + Sync {
     // #region Unimplemented trait functions
     /// 🐎 » fn called after tickers are added to the rustler
-    fn on_add(&mut self, tickers: &[Ticker]) -> Result<()>;
+    async fn on_add(&mut self, tickers: &[Ticker]) -> Result<()>;
     /// 🐎 » fn called after tickers are deleted from the rustler
-    fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()>;
+    async fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()>;
     /// 🐎 » connects the rustler to the data source
     async fn connect(&mut self) -> Result<()>;
     /// 🐎 » disconnects the rustler from the data source
@@ -323,7 +323,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
         }
 
         if !added_tickers.is_empty() {
-            self.on_add(&added_tickers)?;
+            self.on_add(&added_tickers).await?;
         }
 
         Ok(())
@@ -348,7 +348,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
         }
 
         if !removed_tickers.is_empty() {
-            self.on_delete(&removed_tickers)?;
+            self.on_delete(&removed_tickers).await?;
         }
 
         Ok(())

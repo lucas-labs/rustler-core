@@ -99,12 +99,12 @@ impl Rustler for FooRustler {
         Ok(())
     }
 
-    fn on_add(&mut self, tickers: &[Ticker]) -> Result<()> {
+    async fn on_add(&mut self, tickers: &[Ticker]) -> Result<()> {
         info!("(mock) Adding tickers: {:?}", tickers);
         Ok(())
     }
 
-    fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()> {
+    async fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()> {
         info!("(mock) Deleting tickers: {:?}", tickers);
         Ok(())
     }
