@@ -3,16 +3,6 @@
 version: '3'
 
 tasks:
-    db:up:
-        desc: 🗃️ run database migrations (up)
-        cmds:
-            - sea migrate up
-
-    db:down:
-        desc: 🗃️ run database migrations (down)
-        cmds:
-            - sea migrate down
-
     run:watch:
         desc: 🚀 watch rustler
         cmds:
@@ -79,7 +69,6 @@ tasks:
             - release:pre
         cmds:
             - cargo release major --execute --no-confirm
-
 
     release:
         aliases:

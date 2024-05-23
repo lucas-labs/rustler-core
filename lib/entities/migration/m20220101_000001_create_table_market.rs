@@ -15,6 +15,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Market::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Market::ShortName).string().not_null())
                     .col(ColumnDef::new(Market::FullName).string().not_null())
+                    .col(ColumnDef::new(Market::PubName).string().null())
                     .col(ColumnDef::new(Market::OpensFrom).unsigned().null())
                     .col(ColumnDef::new(Market::OpensTill).unsigned().null())
                     .col(ColumnDef::new(Market::OpenTime).string().null())
@@ -40,6 +41,9 @@ enum Market {
     ShortName,
     /// Full name of the market (e.g. "New York Stock Exchange")
     FullName,
+    /// Optional name used only as publishing key (public name of the market that, when provided,
+    /// will replace the short name in the API responses)
+    PubName,
     /// Day of the week the market opens (using UTC 0-6, where 0 is Sunday)
     OpensFrom,
     /// Day of the week the market closes (using UTC 0-6, where 0 is Sunday)

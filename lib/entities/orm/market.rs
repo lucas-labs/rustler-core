@@ -10,6 +10,7 @@ pub struct Model {
     pub id: String,
     pub short_name: String,
     pub full_name: String,
+    pub pub_name: Option<String>,
     pub opens_from: Option<u32>,
     pub opens_till: Option<u32>,
     pub open_time: Option<String>,
