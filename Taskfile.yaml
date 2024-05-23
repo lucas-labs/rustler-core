@@ -78,3 +78,10 @@ tasks:
             - release:pre
         cmds:
             - cargo release patch --execute
+
+    fmt+lint:
+        desc: 🎨🧶 format and lint rustler
+        cmds:
+            - task fmt
+            - git add .
+            - task lint

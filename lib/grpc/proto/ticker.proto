@@ -21,7 +21,8 @@ message Empty { }
 message Ticker {
     string id = 1;
     string symbol = 2;
-    string market_id = 3;
+    optional string quote_symbol = 3;
+    string market_id = 4;
 }
 
 message Tickers {

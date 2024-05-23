@@ -14,6 +14,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(ColumnDef::new(Ticker::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Ticker::Symbol).string().not_null())
+                    .col(ColumnDef::new(Ticker::QuoteSymbol).string().null())
                     .col(ColumnDef::new(Ticker::MarketId).string().not_null())
                     .foreign_key(
                         ForeignKey::create()
@@ -45,6 +46,9 @@ enum Ticker {
     Id,
     /// Ticker symbol (e.g. "GOOGL")
     Symbol,
+    /// Quote symbol (e.g. "USD"): represents the currency in which the ticker is quoted.
+    /// Could be null, and it will imply USD
+    QuoteSymbol,
     /// Market ID
     MarketId,
 }

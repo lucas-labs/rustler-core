@@ -20,6 +20,7 @@ impl Ticker {
         ticker::Model {
             id: self.id,
             symbol: self.symbol,
+            quote_symbol: self.quote_symbol,
             market_id: self.market_id,
         }
     }
@@ -29,6 +30,7 @@ impl Ticker {
         Self {
             id: model.id,
             symbol: model.symbol,
+            quote_symbol: model.quote_symbol,
             market_id: model.market_id,
         }
     }
