@@ -195,9 +195,14 @@ pub struct Ticker {
 
 impl Ticker {
     pub fn from(t: &ticker::Model, m: &market::Model) -> Self {
+        let market = match &m.pub_name {
+            Some(market) => market.clone(),
+            None => m.short_name.clone(),
+        };
+
         Self {
             symbol: t.symbol.clone(),
-            market: m.short_name.clone(),
+            market,
             quote_asset: t.quote_symbol.clone(),
         }
     }
