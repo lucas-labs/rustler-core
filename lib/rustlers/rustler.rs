@@ -190,6 +190,7 @@ impl Default for RustlerOpts {
 pub struct Ticker {
     pub symbol: String,
     pub market: String,
+    pub quote_asset: Option<String>,
 }
 
 impl Ticker {
@@ -197,6 +198,7 @@ impl Ticker {
         Self {
             symbol: t.symbol.clone(),
             market: m.short_name.clone(),
+            quote_asset: t.quote_symbol.clone(),
         }
     }
 
