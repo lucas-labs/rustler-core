@@ -497,7 +497,7 @@ macro_rules! rustler {
     ) => {
         // Expand to the struct with derives and the fields
         $(#[$outer])*
-        #[derive(Debug, Clone, Default)]
+        #[derive(Default)]
         $vis struct $name {
             status: $crate::rustlers::RustlerStatus,
             next_run: $crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>,

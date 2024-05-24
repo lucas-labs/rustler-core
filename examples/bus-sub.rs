@@ -16,6 +16,7 @@ async fn main() -> Result<()> {
     let ticker = Ticker {
         market: "BINANCE".to_string(),
         symbol: "BTCUSDT".to_string(),
+        quote_asset: None,
     };
 
     let _obs = sx.stream().await?.filter(move |quote| quote.belongs_to(&ticker)).subscribe(|v| {
