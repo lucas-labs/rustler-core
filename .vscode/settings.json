@@ -11,7 +11,7 @@
         ".task": true,
         ".cargo": true,
         // ".github": true,
-        "rustfmt.toml": true,
+        // "rustfmt.toml": true,
         // "**/**/Cargo.toml": true,
 
         // 📦

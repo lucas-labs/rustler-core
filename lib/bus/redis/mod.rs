@@ -1,6 +1,7 @@
 use {super::BusMessage, eyre::Result, redis::Client};
 
 pub mod publish;
+pub mod stream;
 pub mod subscribe;
 
 pub(crate) const KEY_PREFIX: &str = "rustler";

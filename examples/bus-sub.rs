@@ -1,15 +1,18 @@
 use {
     eyre::{set_hook, DefaultHandler, Result},
+    futures::{future, StreamExt},
     rustler_core::{
         bus::{self, SubscriberTrait},
         rustlers::{Quote, Ticker},
     },
-    rxrust::observable::{ObservableExt, ObservableItem},
+    tokio::sync::mpsc,
 };
 
 #[tokio::main]
 async fn main() -> Result<()> {
     set_hook(Box::new(DefaultHandler::default_with))?;
+
+    let (cancel_tx, mut cancel_rx) = mpsc::channel::<()>(1);
 
     let mut sx = bus::redis::subscriber::<Quote, _>(&"redis://127.0.0.1/").await?;
 
@@ -19,12 +22,24 @@ async fn main() -> Result<()> {
         quote_asset: None,
     };
 
-    let _obs = sx.stream().await?.filter(move |quote| quote.belongs_to(&ticker)).subscribe(|v| {
-        println!("Received quote: {}", v);
+    let mut stream =
+        sx.stream().await?.filter(move |quote| future::ready(quote.belongs_to(&ticker)));
+
+    tokio::spawn(async move {
+        // cancel the streaming after 10 seconds
+        tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+        println!("Cancelling stream");
+        cancel_tx.send(()).await.unwrap();
     });
 
-    // wait for 10 seconds
-    tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+    while let Some(quote) = stream.next().await {
+        println!("Received quote: {}", quote);
+        if cancel_rx.try_recv().is_ok() {
+            break;
+        }
+    }
+
+    println!("Stream cancelled");
 
     Ok(())
 }

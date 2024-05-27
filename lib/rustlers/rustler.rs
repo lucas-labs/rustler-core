@@ -11,6 +11,7 @@ use {
     chrono::{DateTime, Local},
     eyre::Result,
     lool::s,
+    serde::Serialize,
     std::{
         collections::HashMap,
         fmt::{self, Display, Formatter},
@@ -29,7 +30,7 @@ pub enum RustlerStatus {
 }
 
 /// 🐎 » an enum representing the different types of market hours
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum MarketHourType {
     Pre = 0,
     Regular = 1,
@@ -57,7 +58,7 @@ impl From<u8> for MarketHourType {
 
 /// 🐎 » a struct storing a ticker's quote at a given time, and the change in price since the last
 /// quote
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct Quote {
     pub id: String,
     pub market: String,

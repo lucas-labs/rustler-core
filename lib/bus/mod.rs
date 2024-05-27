@@ -1,6 +1,8 @@
-use std::{convert::Infallible, fmt::Debug};
+use std::{fmt::Debug, pin::Pin};
 
-use {eyre::Result, rxrust::ops::box_it::CloneableBoxOpThreads, tonic::async_trait};
+use futures::Stream;
+
+use {eyre::Result, tonic::async_trait};
 
 pub mod redis;
 
@@ -39,5 +41,5 @@ pub trait SubscriberTrait<RM: BusMessage> {
     /// 🐎 » **stream**
     ///
     /// returns an `Observable` stream of messages from the redis bus
-    async fn stream(&mut self) -> Result<CloneableBoxOpThreads<RM, Infallible>>;
+    async fn stream(&mut self) -> Result<Pin<Box<dyn Stream<Item = RM> + Send + 'static>>>;
 }

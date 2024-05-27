@@ -1,7 +1,8 @@
 max_width = 100
 array_width = 80
 chain_width = 100
-comment_width = 80
+comment_width = 70
 imports_indent = "Block"
 imports_granularity = "One"
 empty_item_single_line = true
+single_line_if_else_max_width = 70

@@ -1,14 +1,10 @@
 use {
-    super::{key, PrefixedPubSub, RedisClient, KEY_PREFIX},
+    super::{key, stream::SourceStream, PrefixedPubSub, RedisClient, KEY_PREFIX},
     crate::bus::{BusMessage, SubscriberTrait},
     eyre::Result,
-    futures::StreamExt,
+    futures::{Stream, StreamExt},
     lool::{fail, s},
-    rxrust::{
-        observable::BoxIt, observer::Observer, ops::box_it::CloneableBoxOpThreads,
-        subject::SubjectThreads, subscription::Subscription,
-    },
-    std::convert::Infallible,
+    std::pin::Pin,
     tonic::async_trait,
 };
 
@@ -24,9 +20,9 @@ pub struct RedisSubscriber<RM: BusMessage> {
     //       this way we can just clone the connection when needing instead of storing the
     //       redis client and creating a new connection
     client: redis::Client,
-    subject: Option<SubjectThreads<RM, Infallible>>,
     key_prefix: String,
     pattern: String,
+    pub source_stream: Option<SourceStream<RM>>,
 }
 
 impl<RM: BusMessage> PrefixedPubSub for RedisSubscriber<RM> {
@@ -50,7 +46,7 @@ impl<RM: BusMessage> RedisSubscriber<RM> {
             pattern: s!("*"),
             client: redis.get_client()?,
             key_prefix: s!(KEY_PREFIX),
-            subject: None,
+            source_stream: None,
         })
     }
 
@@ -67,21 +63,16 @@ impl<RM: BusMessage> RedisSubscriber<RM> {
 
     /// subscribe to the redis feed
     async fn start_streaming(&mut self) -> Result<()> {
-        if self.subject.is_none() {
-            self.subject = Some(SubjectThreads::default());
-        }
-
-        if self.subject.is_some() && self.subject.as_ref().unwrap().is_closed() {
-            drop(self.subject.take());
-            self.subject = Some(SubjectThreads::default());
+        if self.source_stream.is_none() {
+            self.source_stream = Some(SourceStream::new());
         }
 
         let pattern = self.pattern.clone();
         let mut conn = self.client.get_async_pubsub().await?;
         let prefix = self.get_prefix();
 
-        if let Some(subject) = self.subject.as_mut() {
-            let mut stream = subject.clone();
+        if let Some(stream) = self.source_stream.as_mut() {
+            let sender = stream.sender().unwrap();
 
             tokio::spawn(async move {
                 conn.psubscribe(key(prefix, pattern)).await?;
@@ -92,12 +83,9 @@ impl<RM: BusMessage> RedisSubscriber<RM> {
                         // TODO: handle possible panic when parsing message
                         //       using catch_unwind
                         let message = RM::from_message(payload);
-                        stream.next(message);
+                        let _ = sender.send(message);
                     }
                 }
-
-                // if the connection with redis is closed, complete the stream
-                stream.complete();
 
                 Result::<()>::Ok(())
             });
@@ -109,16 +97,13 @@ impl<RM: BusMessage> RedisSubscriber<RM> {
 
 #[async_trait]
 impl<RM: BusMessage> SubscriberTrait<RM> for RedisSubscriber<RM> {
-    /// 🐎 » **stream**
-    ///
-    /// returns an `Observable` stream of messages from the redis bus
-    async fn stream(&mut self) -> Result<CloneableBoxOpThreads<RM, Infallible>> {
-        if self.subject.is_none() {
+    async fn stream(&mut self) -> Result<Pin<Box<dyn Stream<Item = RM> + Send + 'static>>> {
+        if self.source_stream.is_none() {
             self.start_streaming().await?;
         }
 
-        match self.subject.as_ref() {
-            Some(subject) => Ok(subject.clone().box_it()),
+        match self.source_stream.as_ref() {
+            Some(stream) => stream.subscribe(),
             None => fail!("Could not start streaming messages from redis bus"),
         }
     }
