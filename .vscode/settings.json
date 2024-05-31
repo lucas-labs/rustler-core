@@ -10,7 +10,7 @@
         ".cocorc": true,
         ".task": true,
         ".cargo": true,
-        // ".github": true,
+        ".github": true,
         // "rustfmt.toml": true,
         // "**/**/Cargo.toml": true,
 

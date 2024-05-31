@@ -12,7 +12,7 @@ pub struct WsEvent {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct ErrorResponse {
+pub struct WsErrorResponse {
     #[serde(rename = "errorCode")]
     pub error_code: u16,
     pub msg: String,

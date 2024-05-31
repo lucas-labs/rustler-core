@@ -16,7 +16,7 @@ pub use {
     tokio::net::{TcpListener, TcpStream},
     tokio_tungstenite::{
         tungstenite::{
-            handshake::server::{Request, Response},
+            handshake::server::{ErrorResponse, Request, Response},
             Error,
         },
         WebSocketStream,
