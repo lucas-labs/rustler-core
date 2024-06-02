@@ -22,9 +22,11 @@ impl EventDispatcher for Dispatcher {
         event: String,
         data: event::Data,
         outgoing: Arc<Mutex<Outgoing>>,
+        conn_id: String,
     ) -> Result<()> {
         info!("Event: {}", event);
         info!("Data: {:?}", data);
+        info!("Connection ID: {}", conn_id);
 
         let mut sx = bus::redis::subscriber::<Quote, _>(&"redis://127.0.0.1/").await?;
         let mut quote_feed = sx.stream().await?;

@@ -32,6 +32,7 @@ pub trait EventDispatcher: Send {
         event: String,
         data: event::Data,
         outgoing: Arc<Mutex<Outgoing>>,
+        conn_id: String,
     ) -> Result<()>;
 }
 
@@ -101,11 +102,12 @@ where
 
             if let Ok(ws_stream) = ws_stream {
                 stats.inc_current_clients();
-
                 let stats = stats.clone();
+                let conn_id = uuid::Uuid::new_v4();
+
                 tokio::spawn(async move {
-                    match Server::handle_connection(ws_stream, dispatcher).await {
-                        Ok(_) => info!("Connection closed"),
+                    match Server::handle_connection(ws_stream, dispatcher, conn_id).await {
+                        Ok(_) => info!("Connection {} closed", conn_id),
                         Err(e) => error!("Error handling connection: {:?}", e),
                     };
 
@@ -123,12 +125,14 @@ where
     async fn handle_connection(
         stream: WebSocketStream<TcpStream>,
         event_dispatcher: ED,
+        conn_id: uuid::Uuid,
     ) -> Result<()> {
         let (outgoing, mut incoming) = stream.split();
         let synced_outgoing = Arc::new(Mutex::new(outgoing));
 
         while let Some(msg) = incoming.next().await {
-            Server::handle_message(msg?, &event_dispatcher, synced_outgoing.clone()).await?;
+            Server::handle_message(msg?, &event_dispatcher, synced_outgoing.clone(), conn_id)
+                .await?;
         }
 
         Ok(())
@@ -139,11 +143,14 @@ where
         msg: Message,
         event_dispatcher: &ED,
         outgoing: Arc<Mutex<Outgoing>>,
+        conn_id: uuid::Uuid,
     ) -> Result<HandlingResult> {
         if msg.is_text() || msg.is_binary() {
             if let Ok(event) = serde_json::from_str::<event::WsEvent>(&msg.to_string()) {
                 let outgoing = Arc::clone(&outgoing);
-                let result = event_dispatcher.dispatch(event.event, event.data, outgoing).await;
+                let result = event_dispatcher
+                    .dispatch(event.event, event.data, outgoing, conn_id.into())
+                    .await;
 
                 match result {
                     Ok(_) => {}
