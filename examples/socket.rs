@@ -6,7 +6,9 @@ use {
     rustler_core::{
         bus::{self, SubscriberTrait},
         rustlers::Quote,
-        socket::{self, event, Error, EventDispatcher, Outgoing, Request, Response},
+        socket::{
+            self, event, CancellationToken, Error, EventDispatcher, Outgoing, Request, Response,
+        },
     },
     std::sync::Arc,
     tokio::{join, sync::Mutex},
@@ -23,6 +25,7 @@ impl EventDispatcher for Dispatcher {
         data: event::Data,
         outgoing: Arc<Mutex<Outgoing>>,
         conn_id: String,
+        _cancel_token: CancellationToken,
     ) -> Result<()> {
         info!("Event: {}", event);
         info!("Data: {:?}", data);
