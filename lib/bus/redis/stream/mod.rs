@@ -2,11 +2,8 @@ use {
     eyre::Result,
     futures::Stream,
     lool::fail,
-    std::{
-        pin::Pin,
-        task::{Context, Poll},
-    },
-    tokio::sync::broadcast::{self, Receiver, Sender},
+    std::pin::Pin,
+    tokio::sync::broadcast::{self, Sender},
 };
 
 use crate::bus::BusMessage;
@@ -37,29 +34,17 @@ impl<RM: BusMessage> SourceStream<RM> {
     // Subscribe to the stream
     pub fn subscribe(&self) -> Result<Pin<Box<dyn Stream<Item = RM> + Send + 'static>>> {
         if let Some(sender) = &self.sender {
-            let receiver = sender.subscribe();
-            Ok(Box::pin(BroadcastStream { receiver }))
+            let mut receiver = sender.subscribe();
+
+            let stream = async_stream::stream! {
+                while let Ok(item) = receiver.recv().await {
+                    yield item;
+                }
+            };
+
+            Ok(Box::pin(stream))
         } else {
             fail!("SourceStream has been consumed")
         }
-    }
-}
-
-// Wrapper around Receiver to implement Stream
-struct BroadcastStream<RM: BusMessage> {
-    receiver: Receiver<RM>,
-}
-
-impl<RM: BusMessage> Stream for BroadcastStream<RM> {
-    type Item = RM;
-
-    fn poll_next(self: Pin<&mut Self>, _cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
-        let this = self.get_mut();
-        // Spawn an async task to receive the message
-        tokio::task::block_in_place(|| match futures::executor::block_on(this.receiver.recv()) {
-            Ok(msg) => Poll::Ready(Some(msg)),
-            Err(broadcast::error::RecvError::Closed) => Poll::Ready(None),
-            Err(broadcast::error::RecvError::Lagged(_)) => Poll::Pending,
-        })
     }
 }

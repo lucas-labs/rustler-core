@@ -1931,6 +1931,7 @@ dependencies = [
 name = "rustler-core"
 version = "0.3.0"
 dependencies = [
+ "async-stream",
  "async-trait",
  "chrono",
  "dotenvy",
