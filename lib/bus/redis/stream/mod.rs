@@ -6,19 +6,20 @@ use {
     tokio::sync::broadcast::{self, Sender},
 };
 
-use crate::bus::BusMessage;
+pub trait StreamMsg: Clone + Send + Sync + 'static {}
 
-pub struct SourceStream<RM: BusMessage> {
+// TODO: move this to a separate module, or maybe to the lool library
+pub struct SourceStream<RM: StreamMsg> {
     sender: Option<Sender<RM>>,
 }
 
-impl<RM: BusMessage> Default for SourceStream<RM> {
+impl<RM: StreamMsg> Default for SourceStream<RM> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<RM: BusMessage> SourceStream<RM> {
+impl<RM: StreamMsg> SourceStream<RM> {
     // Create a new SourceStream with a broadcast channel
     pub fn new() -> Self {
         let (sender, _) = broadcast::channel(100); // Adjust the buffer size as needed

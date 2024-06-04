@@ -1,6 +1,7 @@
 use std::{fmt::Debug, pin::Pin};
 
 use futures::Stream;
+use redis::stream::StreamMsg;
 
 use {eyre::Result, tonic::async_trait};
 
@@ -24,7 +25,7 @@ pub trait ToFromBusMessage {
 
 /// 🐎 » supertrait combining all bus object traits + debug + send + sync + 'static
 pub trait BusMessage:
-    ToBusVal + ToBusKey + ToFromBusMessage + Debug + Clone + Send + Sync + PartialEq + 'static
+    ToBusVal + ToBusKey + ToFromBusMessage + Debug + PartialEq + StreamMsg + 'static
 {
 }
 

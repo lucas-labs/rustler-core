@@ -4,7 +4,7 @@ pub extern crate eyre;
 use {
     super::svc::RustlerMsg,
     crate::{
-        bus::{BusMessage, ToBusKey, ToBusVal, ToFromBusMessage},
+        bus::{redis::stream::StreamMsg, BusMessage, ToBusKey, ToBusVal, ToFromBusMessage},
         entities::{market, ticker},
     },
     async_trait::async_trait,
@@ -163,6 +163,7 @@ impl PartialEq<Quote> for Quote {
     }
 }
 
+impl StreamMsg for Quote {}
 impl BusMessage for Quote {}
 
 #[derive(Debug, Clone)]
