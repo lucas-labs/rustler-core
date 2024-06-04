@@ -1,9 +1,10 @@
-use std::{fmt::Debug, pin::Pin};
-
-use futures::Stream;
-use redis::stream::StreamMsg;
-
-use {eyre::Result, tonic::async_trait};
+use {
+    eyre::Result,
+    futures::Stream,
+    redis::stream::StreamMsg,
+    std::{fmt::Debug, pin::Pin},
+    tonic::async_trait,
+};
 
 pub mod redis;
 
