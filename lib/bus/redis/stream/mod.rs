@@ -8,6 +8,11 @@ use {
 
 pub trait StreamMsg: Clone + Send + Sync + 'static {}
 
+impl StreamMsg for String {}
+impl StreamMsg for Vec<u8> {}
+impl StreamMsg for serde_json::Value {}
+impl StreamMsg for serde_json::Map<String, serde_json::Value> {}
+
 // TODO: move this to a separate module, or maybe to the lool library
 pub struct SourceStream<RM: StreamMsg> {
     sender: Option<Sender<RM>>,
