@@ -11,6 +11,7 @@ use {
     },
     eyre::Result,
     lool::{
+        fail,
         logger::{info, warn},
         sched::{
             recur, ruleset, scheduler::tokio::Scheduler, utils::parse_time, RecurrenceRuleSet,
@@ -18,10 +19,7 @@ use {
         },
     },
     std::sync::Arc,
-    tokio::{
-        spawn,
-        sync::{mpsc::Sender, Mutex},
-    },
+    tokio::sync::{mpsc::Sender, Mutex},
 };
 
 /// **🐎 » Rustler Message**
@@ -103,22 +101,19 @@ where
                 self.schedule_rustler_for((market, tickers), sender.clone()).await?;
             }
 
+            // NOTE: if we wanted to stop all the rustlers for good for some reason, we should
+            // use a select! instead and listen for a stop signal coming from somewhere
             let mut publisher = self.publisher.clone();
-            spawn(async move {
-                while let Some(msg) = receiver.recv().await {
-                    match msg {
-                        RustlerMsg::QuoteMsg(quote) => publisher.publish(quote).await?,
-                    }
+            while let Some(msg) = receiver.recv().await {
+                match msg {
+                    RustlerMsg::QuoteMsg(quote) => publisher.publish(quote).await?,
                 }
+            }
 
-                info!("Rustler message receiver stopped");
-                Ok::<(), eyre::Report>(())
-            });
+            fail!("Rustlers stopped")
         } else {
-            warn!("No markets found with tickers");
+            fail!("No markets found")
         }
-
-        Ok(())
     }
 
     /// **🐎 » restart rustlers**
