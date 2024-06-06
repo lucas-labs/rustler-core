@@ -485,7 +485,7 @@ macro_rules! rustler_accessors {
     };
 }
 
-/// **🐎 » rustler builder macro**
+/// #### 🐎 » rustler builder macro
 ///
 /// The `rustler!` macro is used to define a new `Rustler` struct, expanding the struct definition
 /// with the required fields and derives, and implementing the `RustlerAccessor` trait for the

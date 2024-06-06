@@ -22,12 +22,12 @@ use {
     tokio::sync::{mpsc::Sender, Mutex},
 };
 
-/// **🐎 » Rustler Message**
+/// #### 🐎 » Rustler Message
 pub enum RustlerMsg {
     QuoteMsg(Quote),
 }
 
-/// **🐎 » create a quote message**
+/// #### 🐎 » create a quote message
 #[inline]
 pub fn quote(
     id: String,
@@ -47,9 +47,9 @@ pub fn quote(
     })
 }
 
-/// **🐎 » Rustlers Service**
+/// #### 🐎 » Rustlers Service
 ///
-/// The `RustlersSvc` is a service that manages the rustlers and orchestrates their executions.
+/// `RustlersSvc` is a service that manages the rustlers and orchestrates their executions.
 pub struct RustlersSvc<P>
 where
     P: PublisherTrait<Quote> + Send + Sync + 'static + Clone,
@@ -64,7 +64,7 @@ impl<Publisher> RustlersSvc<Publisher>
 where
     Publisher: PublisherTrait<Quote> + Send + Sync + 'static + Clone,
 {
-    /// **🐎 » create service**
+    /// #### 🐎 » create service
     ///
     /// creates a new instance of the `RustlersSvc`
     ///
@@ -86,7 +86,7 @@ where
         }
     }
 
-    /// **🐎 » start rustlers**
+    /// #### 🐎 » start rustlers
     ///
     /// gets market data from the the database and starts
     /// the corresponding rustler for each market
@@ -116,7 +116,7 @@ where
         }
     }
 
-    /// **🐎 » restart rustlers**
+    /// #### 🐎 » restart rustlers
     ///
     /// stops all rustlers and then starts them again
     pub async fn restart(&self) -> Result<()> {

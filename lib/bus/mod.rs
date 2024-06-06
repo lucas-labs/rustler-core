@@ -30,7 +30,7 @@ pub trait BusMessage:
 {
 }
 
-/// 🐎 » trait for bus **Publisher**s
+/// 🐎 » trait for bus `Publisher`s
 #[async_trait]
 pub trait PublisherTrait<RM: BusMessage> {
     /// 🐎 » publish a message to the bus
@@ -40,7 +40,7 @@ pub trait PublisherTrait<RM: BusMessage> {
 /// 🐎 » trait for bus **Publisher**s
 #[async_trait]
 pub trait SubscriberTrait<RM: BusMessage> {
-    /// 🐎 » **stream**
+    /// 🐎 » stream
     ///
     /// returns an `Observable` stream of messages from the redis bus
     async fn stream(&mut self) -> Result<Pin<Box<dyn Stream<Item = RM> + Send + 'static>>>;

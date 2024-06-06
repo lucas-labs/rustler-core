@@ -5,7 +5,7 @@ use {
     tokio::sync::Mutex,
 };
 
-/// **🐎 » rustlerjar! macro**
+/// #### 🐎 » rustlerjar! macro
 ///
 /// A macro to create a `RustlerJar` with multiple Rustler instances and their corresponding
 /// mappings.
@@ -38,7 +38,7 @@ macro_rules! rustlerjar {
     }};
 }
 
-/// **🐎 » RustlerJar**
+/// #### 🐎 » RustlerJar
 ///
 /// A `RustlerJar` is a collection of Rustlers and their corresponding mappings to the markets.
 /// Which indicates which Rustler should be used for a given market. Rustlers are stored as

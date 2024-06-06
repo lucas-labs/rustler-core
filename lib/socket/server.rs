@@ -38,7 +38,7 @@ pub trait EventDispatcher: Send {
     ) -> Result<()>;
 }
 
-/// 🐎 » **`socket::Server`**
+/// 🐎 » Socket Server
 /// --
 ///
 /// A websocket gateway server that listens for incoming connections and dispatches events to the
@@ -73,13 +73,15 @@ where
         })
     }
 
-    /// **🐎 » `start_no_cb`**: start the server
+    /// #### 🐎 » start without setting a callback
+    ///
+    /// will use a _noop_ callback that will do nothing.
     pub async fn start_no_cb(&mut self) {
         let noop_cb = |_: &Request, response: Response| Ok(response);
         self.start(noop_cb).await;
     }
 
-    /// **🐎 » `start`**
+    /// #### 🐎 » start the server
     ///
     /// Starts the server with a handshake callback. Usefull for customizing the
     /// handshake process, e.g. checking headers, etc.
