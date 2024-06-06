@@ -47,6 +47,12 @@ pub fn quote(
     })
 }
 
+/// #### 🐎 » create a quote message from a `Quote`
+#[inline]
+pub fn to_msg(quote: Quote) -> RustlerMsg {
+    RustlerMsg::QuoteMsg(quote)
+}
+
 /// #### 🐎 » Rustlers Service
 ///
 /// `RustlersSvc` is a service that manages the rustlers and orchestrates their executions.
