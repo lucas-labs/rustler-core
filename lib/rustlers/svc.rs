@@ -159,10 +159,10 @@ where
                 rustler.set_msg_sender(Some(sender))
             }
 
-            if let Some((start, stop)) = rules {
-                let start_name = format!("start-rustler-{}", market.short_name);
-                let end_name = format!("end-rustler-{}", market.short_name);
+            let start_name = format!("start-rustler-{}", market.short_name);
+            let end_name = format!("end-rustler-{}", market.short_name);
 
+            if let Some((start, stop)) = &rules {
                 // TODO: we will need to store the job handlers in the `RustlersSvc` struct
                 //       so that we can stop them when we need to restart the rustlers
 
@@ -194,17 +194,16 @@ where
                     market.short_name,
                     end_job.get_next_run()
                 );
-
-                if should_be_running_now(start, stop) {
-                    info!("Starting '{start_name}' right away");
-                    Self::start_rustler_for(rustler.clone(), tickers).await;
-                }
-
-                Ok(())
             } else {
-                warn!("No schedule rules found for market '{}'", market.short_name);
-                Ok(())
+                info!("No schedule rules found for market '{}'", market.short_name);
             }
+
+            if should_be_running_now(rules) {
+                info!("Starting '{start_name}' right away");
+                Self::start_rustler_for(rustler.clone(), tickers).await;
+            }
+
+            Ok(())
         } else {
             warn!("No rustler found for market '{}'", market.short_name);
             Ok(())
@@ -314,20 +313,25 @@ enum Op {
 }
 
 /// checks if the rustler should be running now
-fn should_be_running_now(start: SchedulingRule, stop: SchedulingRule) -> bool {
-    let now = chrono::Local::now();
+fn should_be_running_now(rules: Option<(SchedulingRule, SchedulingRule)>) -> bool {
+    if let Some((start, stop)) = rules {
+        let now = chrono::Local::now();
 
-    let start_date = start.next_from(now);
-    let stop_date = stop.next_from(now);
+        let start_date = start.next_from(now);
+        let stop_date = stop.next_from(now);
 
-    // if start date is Some in the past and stop_date is None, we should be running
+        // if start date is Some in the past and stop_date is None, we should be running
 
-    if start_date.is_some() && stop_date.is_none() {
-        return true;
-    }
+        if start_date.is_some() && stop_date.is_none() {
+            return true;
+        }
 
-    match (start_date, stop_date) {
-        (Some(start), Some(stop)) => stop < start && now < stop,
-        _ => true,
+        match (start_date, stop_date) {
+            (Some(start), Some(stop)) => stop < start && now < stop,
+            _ => true,
+        }
+    } else {
+        // if there are no rules, it means the rustler should be running all the time
+        true
     }
 }
