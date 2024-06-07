@@ -262,12 +262,46 @@ pub trait RustlerAccessor {
 pub trait Rustler: RustlerAccessor + Send + Sync {
     // #region Unimplemented trait functions
     /// 🐎 » fn called after tickers are added to the rustler
+    ///
+    /// After calling this function the rustler should start broadcasting quotes for the added
+    /// tickers.
     async fn on_add(&mut self, tickers: &[Ticker]) -> Result<()>;
     /// 🐎 » fn called after tickers are deleted from the rustler
+    ///
+    /// After calling this function the tickers should be removed from the rustler and it should
+    /// stop broadcasting quotes for the deleted tickers.
     async fn on_delete(&mut self, tickers: &[Ticker]) -> Result<()>;
     /// 🐎 » connects the rustler to the data source
+    ///
+    /// The implementation should take care of setting up any resources, open connections, etc.
+    /// after calling this function the rustler should be in a connected state, and the `status`
+    /// should be `RustlerStatus::Connected`.
+    ///
+    /// Being in a connected state not necessarily means that the rustler has started rustling, it
+    /// just means that it is connected to the data source and ready to start rustling. Although
+    /// the implementation can start rustling after connecting if needed. In most cases, the
+    /// rustler should only start rustling after `on_add` is called and the rustler has something to
+    /// rustle.
     async fn connect(&mut self) -> Result<()>;
     /// 🐎 » disconnects the rustler from the data source
+    ///
+    /// The implementation should take care of cleaning up any resources, close
+    /// connections, etc.
+    ///
+    /// After calling this function the rustler should be in a
+    /// disconnected state, and the `status` should be `RustlerStatus::Disconnected`.
+    ///
+    /// Being in a disconnected state means that the rustler is not connected to the data source and
+    /// is not rustling or broadcasting any quotes.
+    ///
+    /// After calling this function it is assumed that the rustler:
+    ///   - is not rustling
+    ///   - is not connected to the data source
+    ///   - has freed up any resources and is ready to be dropped if necessary
+    ///   - can connect to the data source again if needed, by calling the `connect` function
+    ///
+    /// This function will be called atomatically when the rustler does not have any tickers
+    /// anymore (after calling `on_delete` and the tickers map is empty)
     async fn disconnect(&mut self) -> Result<()>;
     // #endregion
 
