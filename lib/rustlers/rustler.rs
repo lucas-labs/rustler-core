@@ -221,39 +221,88 @@ impl Ticker {
 
 pub trait RustlerAccessor {
     // #region fields g&s
+
+    /// 🐎 » returns the name of the rustler
     fn name(&self) -> String;
 
-    fn static_name() -> String
-    where
-        Self: Sized;
-
+    /// 🐎 » returns the [`RustlerStatus`] of the rustler
     fn status(&self) -> &RustlerStatus;
+    /// 🐎 » sets the [`RustlerStatus`] of the rustler
     fn set_status(&mut self, status: RustlerStatus) -> Result<()>;
 
+    /// 🐎 »  returns `true` if the rustler's [`RustlerStatus`] is [RustlerStatus::Connecting]
+    fn is_connecting(&self) -> bool {
+        self.status() == &RustlerStatus::Connecting
+    }
+    /// 🐎 »  returns `true` if the rustler's [`RustlerStatus`] is [RustlerStatus::Connected]
+    fn is_connected(&self) -> bool {
+        self.status() == &RustlerStatus::Connected
+    }
+    /// 🐎 »  returns `true` if the rustler's [`RustlerStatus`] is [RustlerStatus::Disconnecting]
+    fn is_disconnecting(&self) -> bool {
+        self.status() == &RustlerStatus::Disconnecting
+    }
+    /// 🐎 »  returns `true` if the rustler's [`RustlerStatus`] is [RustlerStatus::Disconnected]
+    fn is_disconnected(&self) -> bool {
+        self.status() == &RustlerStatus::Disconnected
+    }
+    /// 🐎 »  returns `true` if the rustler's [`RustlerStatus`] is [RustlerStatus::Connected] or
+    /// [RustlerStatus::Connecting]
+    fn is_connected_or_connecting(&self) -> bool {
+        self.is_connected() || self.is_connecting()
+    }
+    /// 🐎 »  returns `true` if the rustler's [`RustlerStatus`] is [RustlerStatus::Disconnected] or
+    /// [RustlerStatus::Disconnecting]
+    fn is_disconnected_or_disconnecting(&self) -> bool {
+        self.is_disconnected() || self.is_disconnecting()
+    }
+
+    /// 🐎 » returns the next run time of the rustler
     fn next_run(&self) -> &DateTime<Local>;
+    /// 🐎 » sets the next run time of the rustler
     fn set_next_run(&mut self, next_run: DateTime<Local>);
 
+    /// 🐎 » returns the next stop time of the rustler
     fn next_stop(&self) -> &Option<DateTime<Local>>;
+    //// 🐎 » sets the next stop time of the rustler
     fn set_next_stop(&mut self, next_stop: Option<DateTime<Local>>);
 
+    /// 🐎 » returns the last run time of the rustler
     fn last_run(&self) -> &Option<DateTime<Local>>;
+    /// 🐎 » sets the last run time of the rustler
     fn set_last_run(&mut self, last_run: Option<DateTime<Local>>);
 
+    /// 🐎 » returns the last stop time of the rustler
     fn last_stop(&self) -> &Option<DateTime<Local>>;
+    /// 🐎 » sets the last stop time of the rustler
     fn set_last_stop(&mut self, last_stop: Option<DateTime<Local>>);
 
+    /// 🐎 » returns the last update time of the rustler
     fn last_update(&self) -> &Option<DateTime<Local>>;
+    /// 🐎 » sets the last update time of the rustler
     fn set_last_update(&mut self, last_update: Option<DateTime<Local>>);
 
+    /// 🐎 » returns the options of the rustler
     fn opts(&self) -> &RustlerOpts;
+    /// 🐎 » sets the options (see [`RustlerOpts`]) of the rustler
     fn set_opts(&mut self, opts: RustlerOpts);
 
+    /// 🐎 » returns the [`Ticker`]s of the rustler
     fn tickers(&self) -> &HashMap<String, Ticker>;
+    /// 🐎 » returns the [`Ticker`]s of the rustler as mutable
     fn tickers_mut(&mut self) -> &mut HashMap<String, Ticker>;
+    /// 🐎 » sets the [`Ticker`]s of the rustler
     fn set_tickers(&mut self, tickers: HashMap<String, Ticker>);
 
+    /// 🐎 » returns the message sender of the rustler
+    ///
+    /// the message sender is used to send messages back to the rustler service; if the message is
+    /// a [`RustlerMsg::QuoteMsg`] then the rustler will publish the quote to the bus (redis
+    /// probably)
     fn msg_sender(&self) -> &Option<Sender<RustlerMsg>>;
+    /// 🐎 » returns the message sender of the rustler as mutable
     fn msg_sender_mut(&mut self) -> &mut Option<Sender<RustlerMsg>>;
+    /// 🐎 » sets the message sender of the rustler
     fn set_msg_sender(&mut self, sender: Option<Sender<RustlerMsg>>);
     // #endregion
 }
@@ -327,7 +376,14 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
         Ok(())
     }
 
-    /// adds new tickers to the rustler
+    /// 🐎 » adds tickers to the rustler
+    ///
+    /// Will call the [`Rustler::on_add`] function, so that the implementation can decide what to do after
+    /// adding the tickers (e.g. sending a message to a websocket to start listening for quotes,
+    /// send an http request, etc.).
+    ///
+    /// Depending on the `connect_on_add` option in the rustler's options, the rustler will
+    /// call [`Rustler::connect`] if it is disconnected before calling [`Rustler::on_add`].
     async fn add(&mut self, new_tickers: &Vec<Ticker>) -> Result<()> {
         let tickers = self.tickers_mut();
         let mut added_tickers = vec![];
@@ -356,7 +412,14 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
         Ok(())
     }
 
-    /// deletes tickers from the rustler
+    /// 🐎 » deletes tickers from the rustler
+    ///
+    /// Will call the [`Rustler::on_delete`] function, so that the implementation can decide what to
+    /// do after deleting the tickers (e.g. sending a message to a websocket to stop listening for
+    /// quotes, etc.).
+    ///
+    /// If after deleting the tickers the tickers map is empty, the rustler will call
+    /// [`Rustler::disconnect`] to disconnect the rustler from the data source.
     async fn delete(&mut self, new_tickers: &Vec<Ticker>) -> Result<()> {
         let tickers = self.tickers_mut();
         let mut removed_tickers = vec![];
@@ -384,16 +447,13 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
 
 /// macro that expands to the accessor functions for a `Rustler` struct
 ///
-/// for internal use
+/// __intended for internal use only__
 #[macro_export]
 macro_rules! rustler_accessors {
     (
         $name:ident
     ) => {
         fn name(&self) -> String {
-            stringify!($name).to_string()
-        }
-        fn static_name() -> String {
             stringify!($name).to_string()
         }
         fn status(&self) -> &$crate::rustlers::RustlerStatus {
