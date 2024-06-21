@@ -20,26 +20,15 @@ Also, this library is built using the `Rust` programming language... so, **_rust
 
 ## What this library includes
 
-This library defines the core functionality for a `rustler`. It includes the following:
-
--   A [`Rustler`](./lib/rustlers/rustler.rs) trait that defines the core functionality for a `rustler`.
--   A [`RustlersSvc`](./lib/rustlers/svc.rs) which orchestrates the `rustlers` at runtime, scheduling them to scrape stock pricing data between market hours.
-
-More info [here](./lib/rustlers/README.md).
-
-Apart from the above, this library also defines:
-
--   a [database schema](./lib/entities/orm/) for storing market hours, which is used by the `RustlersSvc` to schedule the `rustlers`.
--   initial [database migrations](./lib/entities/migration) to create the schema.
--   a [grpc server](./lib/grpc/) to interact with the rustlers database.
--   <img alt="unimplemented" src="https://raw.githubusercontent.com/lucas-labs/rustler-core/master/.github/img/todo.svg" height="12"> a [websocket gateway server](./lib/socket/) to stream stock pricing data to subscribed clients
+See [here](./lib/rustlers/README.md).
 
 > [!NOTE]
 >
-> This library defines a _rustler_ as a service that scrapes stock pricing data for a
-> particular market.
+> This library defines a _rustler_ as a service that scrapes stock pricing data for a particular 
+> market.
 >
-> Although this library contains the core and abstract functionality for the rustlers, it doesn't include any concrete implementation for them.
+> Although this library contains the core and abstract functionality for the rustlers, it doesn't
+> include any concrete implementation for them.
 >
 > Actual concrete implementations for each market cannot be published for many reasons.
 

@@ -357,7 +357,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
     /// 🐎 » starts the rustler
     async fn start(&mut self) -> Result<()> {
         let opts = self.opts();
-        if opts.connect_on_start {
+        if opts.connect_on_start && !self.is_connected_or_connecting() {
             self.connect().await?;
         }
         Ok(())
@@ -400,7 +400,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
 
         if self.opts().connect_on_add {
             // if disconnected, then connect the rustler
-            if self.status() == &RustlerStatus::Disconnected {
+            if !self.is_connected_or_connecting() {
                 self.connect().await?;
             }
         }
@@ -433,7 +433,7 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
 
         // if after deleting the tickers the tickers map is
         // empty, disconnect the rustler
-        if tickers.is_empty() {
+        if tickers.is_empty() && !self.is_disconnected_or_disconnecting() {
             self.disconnect().await?;
         }
 
