@@ -319,24 +319,8 @@ pub trait Rustler: RustlerAccessor + Send + Sync {
     /// should be called after the status of the rustler changes
     fn handle_status_change(&mut self) -> Result<()> {
         match self.status() {
-            RustlerStatus::Disconnected => {
-                self.set_last_stop(Some(Local::now()));
-
-                // if let Some(callbacks) = self.callbacks() {
-                //     if let Some(on_disconnected) = callbacks.on_disconnected {
-                //         on_disconnected()?;
-                //     }
-                // }
-            }
-            RustlerStatus::Connected => {
-                self.set_last_run(Some(Local::now()));
-
-                // if let Some(callbacks) = self.callbacks() {
-                //     if let Some(on_connected) = callbacks.on_connected {
-                //         on_connected()?;
-                //     }
-                // }
-            }
+            RustlerStatus::Disconnected => self.set_last_stop(Some(Local::now())),
+            RustlerStatus::Connected => self.set_last_run(Some(Local::now())),
             _ => {}
         };
 
@@ -433,6 +417,11 @@ macro_rules! rustler_accessors {
         fn next_run(&self) -> &$crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local> {
             &self.next_run
         }
+        // TODO: Instead of next_run and next_stop, store the scheduling rules
+        //       we can calculate the next run and next stop times from the rules, and will also be
+        //       useful to decide if we should recover from a disconnection or not (we should only
+        //       recover if the rules say we should be connected at the current time, otherwise we
+        //       should stay disconnected, even if it was an abnormal disconnection)
         fn set_next_run(
             &mut self,
             next_run: $crate::rustlers::chrono::DateTime<$crate::rustlers::chrono::Local>,

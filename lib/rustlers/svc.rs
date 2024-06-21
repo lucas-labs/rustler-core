@@ -112,6 +112,11 @@ where
             let mut publisher = self.publisher.clone();
             while let Some(msg) = receiver.recv().await {
                 match msg {
+                    // TODO: if we want to restart a dead rustler, we should listen for a restart
+                    //       signal here and restart the rustler. The restart signal does not exist
+                    //       yet, so we will need to implement it and send it from rustlers when
+                    //       it makes sense to restart them (when we are sure we are not going to
+                    //       keep listening for quotes from the source feed, for example)
                     RustlerMsg::QuoteMsg(quote) => publisher.publish(quote).await?,
                 }
             }
