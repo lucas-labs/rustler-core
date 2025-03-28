@@ -35,21 +35,20 @@ pub mod db {
         },
     };
 
-    const RUSTLER_DATABASE: &str = "RUSTLER_DATABASE";
+    const DATABASE_URL: &str = "DATABASE_URL";
 
     fn get_default_conn_str() -> String {
         let conn_str = s!("sqlite://rustler.db?mode=rwc");
         info!(
             "No `{}` env var found, using default: {}",
-            RUSTLER_DATABASE.italic(),
+            DATABASE_URL.italic(),
             conn_str.green()
         );
         conn_str
     }
 
     pub async fn get_connection() -> Result<DatabaseConnection> {
-        let db_conn_str =
-            std::env::var(RUSTLER_DATABASE).unwrap_or_else(|_| get_default_conn_str());
+        let db_conn_str = std::env::var(DATABASE_URL).unwrap_or_else(|_| get_default_conn_str());
 
         let mut conn_opts = ConnectOptions::new(db_conn_str.to_owned());
         conn_opts.sqlx_logging(false);
