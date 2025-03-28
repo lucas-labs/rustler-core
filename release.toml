@@ -1,7 +1,7 @@
 allow-branch = ["master"]
 sign-commit = true
 sign-tag = true
-registry = "lugit-sa"
+registry = "lugit"
 pre-release-commit-message = "release: 🔖 v{{version}}"
 tag-message = "release: 🔖 v{{version}}"
 tag-prefix = ""
