@@ -50,10 +50,10 @@ impl<RM: BusMessage> PublisherTrait<RM> for RedisPublisher<RM> {
     async fn publish(&mut self, value: RM) -> Result<()> {
         let obj_key = key(self.get_prefix(), value.to_bus_key());
         // set hash key
-        self.conn.hset_multiple(&obj_key, value.to_bus_val().as_slice()).await?;
+        () = self.conn.hset_multiple(&obj_key, value.to_bus_val().as_slice()).await?;
 
         // publish to the appropriate channel
-        self.conn.publish(&obj_key, value.as_message()).await?;
+        () = self.conn.publish(&obj_key, value.as_message()).await?;
         Ok(())
     }
 }

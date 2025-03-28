@@ -14,7 +14,7 @@ fn main() {
 fn compile_proto(proto_file: &str) {
     tonic_build::configure()
         .build_server(true)
-        .compile(&[proto_file], &["."])
+        .compile_protos(&[proto_file], &["."])
         .unwrap_or_else(|e| panic!("protobuf compile error: {}", e));
 
     println!("cargo:rerun-if-changed={}", proto_file);
