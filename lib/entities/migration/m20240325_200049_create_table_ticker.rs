@@ -16,6 +16,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Ticker::Symbol).string().not_null())
                     .col(ColumnDef::new(Ticker::QuoteSymbol).string().null())
                     .col(ColumnDef::new(Ticker::MarketId).string().not_null())
+                    .col(ColumnDef::new(Ticker::Active).boolean().not_null().default(true))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk_ticker_market_id")
@@ -51,4 +52,6 @@ enum Ticker {
     QuoteSymbol,
     /// Market ID
     MarketId,
+    /// Active status of the ticker. This defines if quotes are generated for this ticker or not.
+    Active,
 }

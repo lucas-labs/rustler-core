@@ -24,6 +24,13 @@ impl Service {
         Ok(tickers)
     }
 
+    /// 🐎 » get all active
+    pub async fn get_all_active(&self) -> Result<Vec<TickerModel>, DbErr> {
+        let tickers =
+            Ticker::find().filter(ticker::Column::Active.eq(true)).all(&self.conn).await?;
+        Ok(tickers)
+    }
+
     /// 🐎 » retrieves a ticker from the database, given its id
     pub async fn get(&self, id: String) -> Result<Option<TickerModel>, DbErr> {
         let ticker = Ticker::find_by_id(id).one(&self.conn).await?;

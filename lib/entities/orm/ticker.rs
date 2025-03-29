@@ -11,6 +11,7 @@ pub struct Model {
     pub symbol: String,
     pub quote_symbol: Option<String>,
     pub market_id: String,
+    pub active: bool,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

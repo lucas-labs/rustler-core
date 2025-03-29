@@ -23,6 +23,7 @@ message Ticker {
     string symbol = 2;
     optional string quote_symbol = 3;
     string market_id = 4;
+    bool active = 5;
 }
 
 message Tickers {

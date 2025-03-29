@@ -22,6 +22,7 @@ impl Ticker {
             symbol: self.symbol,
             quote_symbol: self.quote_symbol,
             market_id: self.market_id,
+            active: self.active,
         }
     }
 
@@ -32,6 +33,7 @@ impl Ticker {
             symbol: model.symbol,
             quote_symbol: model.quote_symbol,
             market_id: model.market_id,
+            active: model.active,
         }
     }
 }
